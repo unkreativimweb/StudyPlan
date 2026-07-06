@@ -34,3 +34,6 @@ The MVP architecture is complete. The Scheduler API and the Dashboard read the d
 - **Deployment:** The user hosts this in an LXC container accessible via Tailscale VPN. No Auth needed.
 
 *Follow these rules closely to maintain the architectural integrity and the highly specific aesthetic of the project.*
+
+## 5. Version Control Rules
+- **Incremental Commits:** Always use small, incremental `git commit` commands after meaningful changes to allow for better version control and tracking. Agents must follow this rule actively during development.

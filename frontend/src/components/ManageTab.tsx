@@ -14,6 +14,12 @@ export function ManageTab() {
   const [examForm, setExamForm] = useState({ id: '', name: '', deadline: '' });
   const [topicForm, setTopicForm] = useState({ id: '', examId: '', title: '', size: 'S' });
   const [blockerForm, setBlockerForm] = useState({ id: '', title: '', dayOfWeek: '', startTime: '', endTime: '' });
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const showSuccess = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
 
   const handleExamSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +34,7 @@ export function ManageTab() {
       if (res.ok) {
         setExamForm({ id: '', name: '', deadline: '' });
         fetchExams();
+        showSuccess('Exam saved successfully!');
       }
     } catch (err) { console.error(err); }
   };
@@ -46,6 +53,7 @@ export function ManageTab() {
         setTopicForm({ id: '', examId: '', title: '', size: 'S' });
         fetchExams();
         fetchSchedulerData();
+        showSuccess('Topic saved successfully!');
       }
     } catch (err) { console.error(err); }
   };
@@ -71,6 +79,7 @@ export function ManageTab() {
         setBlockerForm({ id: '', title: '', dayOfWeek: '', startTime: '', endTime: '' });
         fetchBlockers();
         fetchSchedulerData();
+        showSuccess('Blocker saved successfully!');
       }
     } catch (err) { console.error(err); }
   };
@@ -81,6 +90,7 @@ export function ManageTab() {
       if (res.ok) {
         if (type === 'exams' || type === 'topics') { fetchExams(); fetchSchedulerData(); }
         if (type === 'blockers') { fetchBlockers(); fetchSchedulerData(); }
+        showSuccess('Item deleted successfully!');
       }
     } catch (e) { console.error(e); }
   }
@@ -93,9 +103,17 @@ export function ManageTab() {
       transition={{ duration: 0.3 }}
       className="max-w-7xl mx-auto space-y-12"
     >
-      <header className="border-b border-border pb-8 flex items-end justify-between">
+      <header className="border-b border-border pb-8 flex items-end justify-between relative">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">Data<br/><span className="text-mutedFg">& Progress</span></h1>
-        <div className="text-right">
+        <div className="text-right flex flex-col items-end space-y-4">
+           {successMsg && (
+             <motion.div 
+               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+               className="text-xs font-bold uppercase tracking-widest text-green-500 bg-green-500/10 px-3 py-1 border border-green-500/20"
+             >
+               {successMsg}
+             </motion.div>
+           )}
            <Database className="w-12 h-12 text-accent" />
         </div>
       </header>

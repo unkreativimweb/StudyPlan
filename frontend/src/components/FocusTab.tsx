@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { Check, Clock, FastForward, Play, Square } from 'lucide-react';
@@ -6,10 +6,23 @@ import { useStore } from '../lib/store';
 
 export function FocusTab() {
   const { schedulerData, fetchSchedulerData, activeSessionId, activeTopicId, startSession, stopSession, completeTopic } = useStore();
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     fetchSchedulerData();
   }, [fetchSchedulerData]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeSessionId) {
+      interval = setInterval(() => {
+        setElapsedSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeSessionId]);
 
   if (!schedulerData) {
     return (
@@ -130,8 +143,19 @@ export function FocusTab() {
                   </button>
                 </div>
                 <div className="col-span-2 text-right flex items-center justify-end font-mono text-sm text-mutedFg">
-                  <Clock className={cn("w-3 h-3 mr-2", isActiveSession && "text-accent animate-spin-slow")} />
-                  {Math.round(topic.expectedDurationMinutes || 60)}m
+                  {isActiveSession ? (
+                    <>
+                      <Clock className="w-3 h-3 mr-2 text-accent animate-pulse" />
+                      <span className="text-accent font-bold">
+                        {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="w-3 h-3 mr-2" />
+                      {Math.round(topic.expectedDurationMinutes || 60)}m
+                    </>
+                  )}
                 </div>
               </motion.div>
             );

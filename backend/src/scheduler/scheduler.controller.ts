@@ -9,4 +9,9 @@ export class SchedulerController {
   getDailyPlan() {
     return this.schedulerService.getDailyPlan();
   }
+
+  @Get('weekly')
+  getWeeklyPlan() {
+    return this.schedulerService.getWeeklyPlan();
+  }
 }

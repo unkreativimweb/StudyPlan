@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { BlockerService } from './blocker.service';
 import { CreateBlockerDto } from './dto/create-blocker.dto';
+import { UpdateBlockerDto } from './dto/update-blocker.dto';
 
 @Controller('blockers')
 export class BlockerController {
@@ -14,6 +15,11 @@ export class BlockerController {
   @Get()
   findAll() {
     return this.blockerService.findAll();
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateBlockerDto: UpdateBlockerDto) {
+    return this.blockerService.update(id, updateBlockerDto);
   }
 
   @Delete(':id')

@@ -3,4 +3,5 @@ export declare class UpdateTopicDto {
     size?: string;
     status?: string;
     order?: number;
+    isPinned?: boolean;
 }

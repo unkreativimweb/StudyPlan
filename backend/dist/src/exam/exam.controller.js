@@ -16,6 +16,7 @@ exports.ExamController = void 0;
 const common_1 = require("@nestjs/common");
 const exam_service_1 = require("./exam.service");
 const create_exam_dto_1 = require("./dto/create-exam.dto");
+const update_exam_dto_1 = require("./dto/update-exam.dto");
 let ExamController = class ExamController {
     examService;
     constructor(examService) {
@@ -29,6 +30,9 @@ let ExamController = class ExamController {
     }
     findOne(id) {
         return this.examService.findOne(id);
+    }
+    update(id, updateExamDto) {
+        return this.examService.update(id, updateExamDto);
     }
     remove(id) {
         return this.examService.remove(id);
@@ -55,6 +59,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ExamController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_exam_dto_1.UpdateExamDto]),
+    __metadata("design:returntype", void 0)
+], ExamController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

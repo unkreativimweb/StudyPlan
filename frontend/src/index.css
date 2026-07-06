@@ -3,23 +3,147 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-editorial: 'Fraunces', serif;
+    --font-brutalist: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Base Theme (Brutalist Dark) */
+    --font-primary: var(--font-brutalist);
+    
+    --color-bg: #09090b;
+    --color-fg: #fafafa;
+    --color-border: #27272a;
+    --color-accent: #f97316; /* Electric Orange */
+    --color-accent-fg: #000000;
+    --color-muted: #18181b;
+    --color-muted-fg: #a1a1aa;
+    
+    --bg-grid: linear-gradient(to right, rgba(39, 39, 42, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(39, 39, 42, 0.4) 1px, transparent 1px);
+  }
+
+  .theme-editorial {
+    --font-primary: var(--font-editorial);
+    --color-bg: #fdfbf7;
+    --color-fg: #1c1917;
+    --color-border: #e7e5df;
+    --color-accent: #dc2626; /* Deep Red */
+    --color-accent-fg: #ffffff;
+    --color-muted: #f5f5f0;
+    --color-muted-fg: #78716c;
+    --bg-grid: linear-gradient(to right, rgba(231, 229, 223, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(231, 229, 223, 0.5) 1px, transparent 1px);
+  }
+
+  .theme-mono {
+    --font-primary: var(--font-mono);
+    --color-bg: #000000;
+    --color-fg: #33ff33; /* Terminal Green */
+    --color-border: #1a4d1a;
+    --color-accent: #33ff33;
+    --color-accent-fg: #000000;
+    --color-muted: #0a1a0a;
+    --color-muted-fg: #1a801a;
+    --bg-grid: linear-gradient(to right, rgba(10, 41, 10, 0.6) 1px, transparent 1px), linear-gradient(to bottom, rgba(10, 41, 10, 0.6) 1px, transparent 1px);
+  }
+
   body {
-    @apply bg-slate-900 text-slate-100 font-sans antialiased selection:bg-indigo-500/30;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    @apply font-sans antialiased overflow-x-hidden transition-colors duration-500;
   }
 }
 
-/* Custom Scrollbar for sleekness */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Subtle grain overlay */
+.bg-grain {
+  position: relative;
 }
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+.bg-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  z-index: -1; /* Place it under content but over background */
 }
-::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
-  border-radius: 4px;
+
+/* Base structural layout for the app */
+#root {
+  min-height: 100vh;
+  background-size: 32px 32px;
+  background-image: var(--bg-grid);
+  position: relative;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted-fg); }
+
+/* =========================================
+   LAYOUT OVERRIDES: ELEGANT / GLASSMORPHISM
+   ========================================= */
+
+.layout-elegant {
+  /* Override background with a soft gradient / aurora feel */
+  background: linear-gradient(135deg, var(--color-bg), var(--color-muted));
+  background-attachment: fixed;
+}
+
+.layout-elegant #root {
+  background-image: none !important; /* remove grid */
+}
+
+.layout-elegant .bg-grain::after {
+  opacity: 0.03; /* much softer noise */
+}
+
+/* Base structural overrides */
+.layout-elegant .border,
+.layout-elegant .border-border,
+.layout-elegant .border-b,
+.layout-elegant .border-t,
+.layout-elegant .border-r,
+.layout-elegant .border-l {
+  border-radius: 20px;
+  border-color: rgba(150, 150, 150, 0.15) !important;
+}
+
+.layout-elegant header.border-b,
+.layout-elegant nav.border-r {
+  border-radius: 0;
+  border-color: transparent !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.layout-elegant .bg-bg {
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.layout-elegant .uppercase {
+  text-transform: none !important;
+  font-weight: 500;
+  letter-spacing: normal !important;
+}
+
+.layout-elegant .font-mono {
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+.layout-elegant input, 
+.layout-elegant select, 
+.layout-elegant button {
+  border-radius: 12px !important;
+  backdrop-filter: blur(8px);
+}
+
+/* For dark themes in elegant mode, make sure text isn't completely washed out */
+.layout-elegant h1, .layout-elegant h2, .layout-elegant h3 {
+  font-weight: 600;
+  background: linear-gradient(to right, var(--color-fg), var(--color-muted-fg));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

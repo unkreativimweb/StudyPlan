@@ -18,4 +18,7 @@ export class UpdateTopicDto {
   @IsNumber()
   @IsOptional()
   order?: number;
+
+  @IsOptional()
+  isPinned?: boolean;
 }

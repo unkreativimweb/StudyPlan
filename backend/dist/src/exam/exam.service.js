@@ -66,6 +66,16 @@ let ExamService = class ExamService {
             throw new common_1.NotFoundException('Exam not found');
         return exam;
     }
+    async update(id, updateExamDto) {
+        const data = { ...updateExamDto };
+        if (updateExamDto.deadline) {
+            data.deadline = new Date(updateExamDto.deadline);
+        }
+        return this.prisma.exam.update({
+            where: { id },
+            data,
+        });
+    }
     async remove(id) {
         return this.prisma.exam.delete({
             where: { id },

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @Controller('exams')
 export class ExamController {
@@ -19,6 +20,11 @@ export class ExamController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.examService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateExamDto: UpdateExamDto) {
+    return this.examService.update(id, updateExamDto);
   }
 
   @Delete(':id')

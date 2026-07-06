@@ -35,6 +35,7 @@ model Topic {
   status                  String    // 'TODO', 'IN_PROGRESS', 'COMPLETED'
   order                   Int       @default(0)
   isSichtung              Boolean   @default(false)
+  isPinned                Boolean   @default(false)
   
   expectedDurationMinutes Float?
   actualDurationMinutes   Float     @default(0)

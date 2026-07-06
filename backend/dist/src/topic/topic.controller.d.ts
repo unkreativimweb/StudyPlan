@@ -13,6 +13,7 @@ export declare class TopicController {
         status: string;
         order: number;
         isSichtung: boolean;
+        isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         examId: string;
@@ -26,6 +27,7 @@ export declare class TopicController {
         status: string;
         order: number;
         isSichtung: boolean;
+        isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         examId: string;
@@ -39,6 +41,7 @@ export declare class TopicController {
         status: string;
         order: number;
         isSichtung: boolean;
+        isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         examId: string;

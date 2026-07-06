@@ -20,6 +20,9 @@ let SchedulerController = class SchedulerController {
     getDailyPlan() {
         return this.schedulerService.getDailyPlan();
     }
+    getWeeklyPlan() {
+        return this.schedulerService.getWeeklyPlan();
+    }
 };
 exports.SchedulerController = SchedulerController;
 __decorate([
@@ -28,6 +31,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], SchedulerController.prototype, "getDailyPlan", null);
+__decorate([
+    (0, common_1.Get)('weekly'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], SchedulerController.prototype, "getWeeklyPlan", null);
 exports.SchedulerController = SchedulerController = __decorate([
     (0, common_1.Controller)('scheduler'),
     __metadata("design:paramtypes", [scheduler_service_1.SchedulerService])

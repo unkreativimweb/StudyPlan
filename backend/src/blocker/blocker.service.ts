@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBlockerDto } from './dto/create-blocker.dto';
+import { UpdateBlockerDto } from './dto/update-blocker.dto';
 
 @Injectable()
 export class BlockerService {
@@ -22,7 +23,20 @@ export class BlockerService {
     return this.prisma.fixedBlocker.findMany();
   }
 
+  async update(id: string, updateBlockerDto: UpdateBlockerDto) {
+    const data: any = { ...updateBlockerDto };
+    if (updateBlockerDto.specificDate) {
+      data.specificDate = new Date(updateBlockerDto.specificDate);
+    }
+    return this.prisma.fixedBlocker.update({
+      where: { id },
+      data,
+    });
+  }
+
   async remove(id: string) {
-    return this.prisma.fixedBlocker.delete({ where: { id } });
+    return this.prisma.fixedBlocker.delete({
+      where: { id },
+    });
   }
 }

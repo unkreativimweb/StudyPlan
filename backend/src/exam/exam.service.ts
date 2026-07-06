@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @Injectable()
 export class ExamService {
@@ -58,6 +59,17 @@ export class ExamService {
     });
     if (!exam) throw new NotFoundException('Exam not found');
     return exam;
+  }
+
+  async update(id: string, updateExamDto: UpdateExamDto) {
+    const data: any = { ...updateExamDto };
+    if (updateExamDto.deadline) {
+      data.deadline = new Date(updateExamDto.deadline);
+    }
+    return this.prisma.exam.update({
+      where: { id },
+      data,
+    });
   }
 
   async remove(id: string) {

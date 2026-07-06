@@ -16,6 +16,7 @@ exports.BlockerController = void 0;
 const common_1 = require("@nestjs/common");
 const blocker_service_1 = require("./blocker.service");
 const create_blocker_dto_1 = require("./dto/create-blocker.dto");
+const update_blocker_dto_1 = require("./dto/update-blocker.dto");
 let BlockerController = class BlockerController {
     blockerService;
     constructor(blockerService) {
@@ -26,6 +27,9 @@ let BlockerController = class BlockerController {
     }
     findAll() {
         return this.blockerService.findAll();
+    }
+    update(id, updateBlockerDto) {
+        return this.blockerService.update(id, updateBlockerDto);
     }
     remove(id) {
         return this.blockerService.remove(id);
@@ -45,6 +49,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], BlockerController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_blocker_dto_1.UpdateBlockerDto]),
+    __metadata("design:returntype", void 0)
+], BlockerController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

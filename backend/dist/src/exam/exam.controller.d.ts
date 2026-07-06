@@ -1,5 +1,6 @@
 import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
 export declare class ExamController {
     private readonly examService;
     constructor(examService: ExamService);
@@ -13,6 +14,7 @@ export declare class ExamController {
             status: string;
             order: number;
             isSichtung: boolean;
+            isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             examId: string;
@@ -40,6 +42,7 @@ export declare class ExamController {
             status: string;
             order: number;
             isSichtung: boolean;
+            isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             examId: string;
@@ -67,11 +70,25 @@ export declare class ExamController {
             status: string;
             order: number;
             isSichtung: boolean;
+            isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             examId: string;
         }[];
     } & {
+        id: string;
+        name: string;
+        deadline: Date;
+        color: string | null;
+        sichtungsphaseCompleted: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        velocityFactorS: number;
+        velocityFactorM: number;
+        velocityFactorL: number;
+        velocityFactorXL: number;
+    }>;
+    update(id: string, updateExamDto: UpdateExamDto): Promise<{
         id: string;
         name: string;
         deadline: Date;

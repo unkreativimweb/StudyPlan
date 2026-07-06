@@ -31,8 +31,20 @@ let BlockerService = class BlockerService {
     async findAll() {
         return this.prisma.fixedBlocker.findMany();
     }
+    async update(id, updateBlockerDto) {
+        const data = { ...updateBlockerDto };
+        if (updateBlockerDto.specificDate) {
+            data.specificDate = new Date(updateBlockerDto.specificDate);
+        }
+        return this.prisma.fixedBlocker.update({
+            where: { id },
+            data,
+        });
+    }
     async remove(id) {
-        return this.prisma.fixedBlocker.delete({ where: { id } });
+        return this.prisma.fixedBlocker.delete({
+            where: { id },
+        });
     }
 };
 exports.BlockerService = BlockerService;

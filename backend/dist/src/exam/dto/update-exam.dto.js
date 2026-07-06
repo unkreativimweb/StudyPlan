@@ -9,40 +9,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateTopicDto = void 0;
+exports.UpdateExamDto = void 0;
 const class_validator_1 = require("class-validator");
-class UpdateTopicDto {
-    title;
-    size;
-    status;
-    order;
-    isPinned;
+class UpdateExamDto {
+    name;
+    deadline;
+    color;
 }
-exports.UpdateTopicDto = UpdateTopicDto;
+exports.UpdateExamDto = UpdateExamDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateTopicDto.prototype, "title", void 0);
+], UpdateExamDto.prototype, "name", void 0);
 __decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsEnum)(['S', 'M', 'L', 'XL']),
+    (0, class_validator_1.IsDateString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateTopicDto.prototype, "size", void 0);
+], UpdateExamDto.prototype, "deadline", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsEnum)(['TODO', 'IN_PROGRESS', 'COMPLETED']),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateTopicDto.prototype, "status", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateTopicDto.prototype, "order", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
-], UpdateTopicDto.prototype, "isPinned", void 0);
-//# sourceMappingURL=update-topic.dto.js.map
+], UpdateExamDto.prototype, "color", void 0);
+//# sourceMappingURL=update-exam.dto.js.map

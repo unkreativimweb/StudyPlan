@@ -9,40 +9,39 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateTopicDto = void 0;
+exports.UpdateBlockerDto = void 0;
 const class_validator_1 = require("class-validator");
-class UpdateTopicDto {
+class UpdateBlockerDto {
     title;
-    size;
-    status;
-    order;
-    isPinned;
+    dayOfWeek;
+    specificDate;
+    startTime;
+    endTime;
 }
-exports.UpdateTopicDto = UpdateTopicDto;
+exports.UpdateBlockerDto = UpdateBlockerDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], UpdateTopicDto.prototype, "title", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsEnum)(['S', 'M', 'L', 'XL']),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateTopicDto.prototype, "size", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsEnum)(['TODO', 'IN_PROGRESS', 'COMPLETED']),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateTopicDto.prototype, "status", void 0);
+], UpdateBlockerDto.prototype, "title", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
-], UpdateTopicDto.prototype, "order", void 0);
+], UpdateBlockerDto.prototype, "dayOfWeek", void 0);
 __decorate([
+    (0, class_validator_1.IsDateString)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Boolean)
-], UpdateTopicDto.prototype, "isPinned", void 0);
-//# sourceMappingURL=update-topic.dto.js.map
+    __metadata("design:type", String)
+], UpdateBlockerDto.prototype, "specificDate", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateBlockerDto.prototype, "startTime", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateBlockerDto.prototype, "endTime", void 0);
+//# sourceMappingURL=update-blocker.dto.js.map

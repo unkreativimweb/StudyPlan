@@ -39,6 +39,7 @@ model Topic {
   
   expectedDurationMinutes Float?
   actualDurationMinutes   Float     @default(0)
+  notBefore               DateTime?
   
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt

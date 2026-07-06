@@ -16,6 +16,8 @@ class CreateTopicDto {
     title;
     size;
     order;
+    notBefore;
+    isSichtung;
 }
 exports.CreateTopicDto = CreateTopicDto;
 __decorate([
@@ -38,4 +40,14 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreateTopicDto.prototype, "order", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateTopicDto.prototype, "notBefore", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], CreateTopicDto.prototype, "isSichtung", void 0);
 //# sourceMappingURL=create-topic.dto.js.map

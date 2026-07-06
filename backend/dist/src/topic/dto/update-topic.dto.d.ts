@@ -4,4 +4,6 @@ export declare class UpdateTopicDto {
     status?: string;
     order?: number;
     isPinned?: boolean;
+    notBefore?: string;
+    isSichtung?: boolean;
 }

@@ -3,4 +3,6 @@ export declare class CreateTopicDto {
     title: string;
     size: string;
     order?: number;
+    notBefore?: string;
+    isSichtung?: boolean;
 }

@@ -1,0 +1,43 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+async function main() {
+    console.log('Running DB fix script...');
+    const exams = await prisma.exam.findMany();
+    for (const exam of exams) {
+        if (exam.name.toLowerCase().includes('englisch mündlich') || exam.name.toLowerCase().includes('englisch muendlich')) {
+            await prisma.exam.update({
+                where: { id: exam.id },
+                data: { sichtungsphaseCompleted: false },
+            });
+            console.log(`Reset sichtungsphaseCompleted for ${exam.name}`);
+        }
+        const topics = await prisma.topic.findMany({ where: { examId: exam.id } });
+        const hasSichtung = topics.some(t => t.isSichtung);
+        if (!hasSichtung) {
+            await prisma.topic.create({
+                data: {
+                    examId: exam.id,
+                    title: 'Sichtungsphase',
+                    size: 'S',
+                    status: 'TODO',
+                    isSichtung: true,
+                    expectedDurationMinutes: 30,
+                    order: 0,
+                }
+            });
+            console.log(`Created missing Sichtungsphase for ${exam.name}`);
+        }
+    }
+    console.log('DB fix complete.');
+}
+main()
+    .catch(e => {
+    console.error(e);
+    process.exit(1);
+})
+    .finally(async () => {
+    await prisma.$disconnect();
+});
+//# sourceMappingURL=fix-db.js.map

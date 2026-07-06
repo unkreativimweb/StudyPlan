@@ -16,6 +16,7 @@ export declare class TopicController {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
     update(id: string, updateTopicDto: UpdateTopicDto): Promise<{
@@ -30,6 +31,7 @@ export declare class TopicController {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
     remove(id: string): Promise<{
@@ -44,6 +46,7 @@ export declare class TopicController {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
 }

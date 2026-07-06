@@ -59,6 +59,8 @@ let TopicService = class TopicService {
                 status: 'TODO',
                 order: createTopicDto.order || 0,
                 expectedDurationMinutes: expectedDuration * factor,
+                notBefore: createTopicDto.notBefore ? new Date(createTopicDto.notBefore) : null,
+                isSichtung: createTopicDto.isSichtung || false,
             },
         });
     }
@@ -67,11 +69,13 @@ let TopicService = class TopicService {
         if (!topic)
             throw new common_1.NotFoundException('Topic not found');
         const isCompleting = updateTopicDto.status === 'COMPLETED' && topic.status !== 'COMPLETED';
+        const dataToUpdate = { ...updateTopicDto };
+        if (updateTopicDto.notBefore !== undefined) {
+            dataToUpdate.notBefore = updateTopicDto.notBefore ? new Date(updateTopicDto.notBefore) : null;
+        }
         const updated = await this.prisma.topic.update({
             where: { id },
-            data: {
-                ...updateTopicDto,
-            },
+            data: dataToUpdate,
         });
         if (isCompleting && !topic.isSichtung && topic.actualDurationMinutes > 0) {
             const baseDur = await this.getBaseDuration(topic.size);

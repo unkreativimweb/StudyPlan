@@ -17,6 +17,7 @@ export declare class ExamService {
             isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
+            notBefore: Date | null;
             examId: string;
         }[];
     } & {
@@ -45,6 +46,7 @@ export declare class ExamService {
             isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
+            notBefore: Date | null;
             examId: string;
         }[];
     } & {
@@ -73,6 +75,7 @@ export declare class ExamService {
             isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
+            notBefore: Date | null;
             examId: string;
         }[];
     } & {

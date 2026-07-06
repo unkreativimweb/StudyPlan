@@ -17,6 +17,7 @@ export declare class TopicService {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
     update(id: string, updateTopicDto: UpdateTopicDto): Promise<{
@@ -31,6 +32,7 @@ export declare class TopicService {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
     private recalculateExpectedDurations;
@@ -46,6 +48,7 @@ export declare class TopicService {
         isPinned: boolean;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
+        notBefore: Date | null;
         examId: string;
     }>;
 }

@@ -75,6 +75,7 @@ let SchedulerService = class SchedulerService {
             else {
                 availableTopics = exam.topics.filter(t => !t.isSichtung && !t.isPinned);
             }
+            availableTopics = availableTopics.filter(t => !t.notBefore || t.notBefore <= endOfDay);
             availableTopics.sort((a, b) => a.order - b.order);
             for (const topic of availableTopics) {
                 const dur = topic.expectedDurationMinutes || 60;
@@ -167,6 +168,7 @@ let SchedulerService = class SchedulerService {
                     const sichtung = availableTopics.find(t => t.isSichtung);
                     availableTopics = sichtung ? [sichtung] : [];
                 }
+                availableTopics = availableTopics.filter(t => !t.notBefore || t.notBefore <= endOfDay);
                 for (const topic of availableTopics) {
                     if (timeAllocated < netTimeAvailable) {
                         const timeToAllocate = Math.min(topic.remainingDuration, netTimeAvailable - timeAllocated);

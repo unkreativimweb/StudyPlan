@@ -21,6 +21,7 @@ export declare class SchedulerController {
             isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
+            notBefore: Date | null;
             examId: string;
         }[];
     }>;
@@ -46,6 +47,7 @@ export declare class SchedulerController {
             isPinned: boolean;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
+            notBefore: Date | null;
             examId: string;
         }[];
     }[]>;

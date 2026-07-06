@@ -12,7 +12,7 @@ export function ManageTab() {
   }, [fetchExams, fetchBlockers]);
 
   const [examForm, setExamForm] = useState({ id: '', name: '', deadline: '' });
-  const [topicForm, setTopicForm] = useState({ id: '', examId: '', title: '', size: 'S' });
+  const [topicForm, setTopicForm] = useState({ id: '', examId: '', title: '', size: 'S', order: '', notBefore: '', isSichtung: false });
   const [blockerForm, setBlockerForm] = useState({ id: '', title: '', dayOfWeek: '', startTime: '', endTime: '' });
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -44,13 +44,17 @@ export function ManageTab() {
     const method = topicForm.id ? 'PATCH' : 'POST';
     const url = topicForm.id ? `${API_URL}/topics/${topicForm.id}` : `${API_URL}/topics`;
     try {
+      const payload: any = { examId: topicForm.examId, title: topicForm.title, size: topicForm.size, isSichtung: topicForm.isSichtung };
+      if (topicForm.order !== '') payload.order = parseInt(topicForm.order.toString(), 10);
+      if (topicForm.notBefore !== '') payload.notBefore = new Date(topicForm.notBefore).toISOString();
+      
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ examId: topicForm.examId, title: topicForm.title, size: topicForm.size }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
-        setTopicForm({ id: '', examId: '', title: '', size: 'S' });
+        setTopicForm({ id: '', examId: '', title: '', size: 'S', order: '', notBefore: '', isSichtung: false });
         fetchExams();
         fetchSchedulerData();
         showSuccess('Topic saved successfully!');
@@ -142,9 +146,12 @@ export function ManageTab() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* EXAMS */}
-        <div className="space-y-6">
+      {/* CREATE NEW DATA SECTION */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2">Create New Data</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* EXAM FORM */}
           <div className="border border-border p-6 bg-bg">
             <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
               <div className="flex items-center space-x-2">
@@ -168,31 +175,14 @@ export function ManageTab() {
             </form>
           </div>
 
-          <div className="border border-border p-4 bg-bg">
-            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Exams</h3>
-            <div className="space-y-2">
-              {exams?.map(ex => (
-                <div key={ex.id} className="flex justify-between items-center text-sm p-2 hover:bg-accent/5 border-l-2" style={{ borderColor: ex.color || 'var(--color-border)' }}>
-                  <span className="font-bold truncate">{ex.name}</span>
-                  <div className="flex space-x-2 shrink-0">
-                    <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16) })}><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent" /></button>
-                    <button onClick={() => deleteItem('exams', ex.id)}><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500" /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* TOPICS */}
-        <div className="space-y-6">
+          {/* TOPIC FORM */}
           <div className="border border-border p-6 bg-bg">
             <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
               <div className="flex items-center space-x-2">
                 <PlusSquare className="w-4 h-4 text-accent" />
                 <h2 className="text-xl font-bold uppercase tracking-widest">{topicForm.id ? 'Edit' : 'New'} Topic</h2>
               </div>
-              {topicForm.id && <button onClick={() => setTopicForm({id:'', examId:'', title:'', size:'S'})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
+              {topicForm.id && <button onClick={() => setTopicForm({id:'', examId:'', title:'', size:'S', order: '', notBefore: '', isSichtung: false})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
             </div>
             <form onSubmit={handleTopicSubmit} className="space-y-4">
               <div>
@@ -206,14 +196,28 @@ export function ManageTab() {
                 <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Title</label>
                 <input required type="text" value={topicForm.title} onChange={e => setTopicForm({...topicForm, title: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Complexity</label>
+                  <select required value={topicForm.size} onChange={e => setTopicForm({...topicForm, size: e.target.value})} className="w-full border border-border bg-transparent text-accent font-bold px-3 py-2 font-mono text-sm focus:border-accent outline-none">
+                    <option value="S" className="bg-bg text-fg">S (Small)</option>
+                    <option value="M" className="bg-bg text-fg">M (Medium)</option>
+                    <option value="L" className="bg-bg text-fg">L (Large)</option>
+                    <option value="XL" className="bg-bg text-fg">XL (Extra Large)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Chapter / Order (Opt)</label>
+                  <input type="number" value={topicForm.order} onChange={e => setTopicForm({...topicForm, order: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" placeholder="e.g. 1" />
+                </div>
+              </div>
               <div>
-                <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Complexity</label>
-                <select required value={topicForm.size} onChange={e => setTopicForm({...topicForm, size: e.target.value})} className="w-full border border-border bg-transparent text-accent font-bold px-3 py-2 font-mono text-sm focus:border-accent outline-none">
-                  <option value="S" className="bg-bg text-fg">S (Small)</option>
-                  <option value="M" className="bg-bg text-fg">M (Medium)</option>
-                  <option value="L" className="bg-bg text-fg">L (Large)</option>
-                  <option value="XL" className="bg-bg text-fg">XL (Extra Large)</option>
-                </select>
+                <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Defer Until Date (Opt)</label>
+                <input type="date" value={topicForm.notBefore} onChange={e => setTopicForm({...topicForm, notBefore: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" />
+              </div>
+              <div className="flex items-center space-x-2 pt-2">
+                <input type="checkbox" id="isSichtung" checked={topicForm.isSichtung} onChange={e => setTopicForm({...topicForm, isSichtung: e.target.checked})} className="accent-accent" />
+                <label htmlFor="isSichtung" className="text-xs font-bold uppercase tracking-widest text-fg">Is Sichtungsphase?</label>
               </div>
               <button type="submit" className="w-full bg-fg text-bg font-bold uppercase tracking-widest text-sm py-3 mt-4 hover:bg-accent transition-colors">
                 {topicForm.id ? 'Update Topic' : 'Add Topic'}
@@ -221,52 +225,7 @@ export function ManageTab() {
             </form>
           </div>
 
-          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
-            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Topics</h3>
-            <div className="space-y-4">
-              {exams?.map(ex => {
-                const pending = ex.topics?.filter(t => t.status !== 'COMPLETED') || [];
-                const done = ex.topics?.filter(t => t.status === 'COMPLETED') || [];
-                if (pending.length === 0 && done.length === 0) return null;
-
-                return (
-                  <div key={ex.id} className="mb-4">
-                    <div className="text-[10px] uppercase font-bold text-accent mb-2 border-b border-border pb-1" style={{ color: ex.color || 'var(--color-accent)' }}>{ex.name}</div>
-                    
-                    {pending.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mb-1">To Do</div>}
-                    {pending.map((t: any) => (
-                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 hover:bg-accent/5 pl-2 border-l-2 border-border mb-1 group transition-colors">
-                        <span className="truncate flex items-center space-x-2">
-                          {t.isPinned && <Pin className="w-3 h-3 text-accent shrink-0" />}
-                          <span className={t.isPinned ? 'text-accent font-bold' : ''}>{t.title}</span>
-                        </span>
-                        <div className="flex space-x-2 opacity-50 group-hover:opacity-100 transition-opacity shrink-0 bg-bg pl-2">
-                          {!t.isPinned && <button onClick={() => pinTopic(t.id)} title="Pin to Today"><Pin className="w-3 h-3 text-mutedFg hover:text-accent" /></button>}
-                          <button onClick={() => completeTopic(t.id)} title="Complete Instantly"><CheckCircle className="w-3 h-3 text-mutedFg hover:text-green-500" /></button>
-                          <button onClick={() => setTopicForm({ id: t.id, examId: t.examId, title: t.title, size: t.size })}><Edit2 className="w-3 h-3 text-mutedFg hover:text-accent" /></button>
-                          <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {done.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mt-3 mb-1">Completed</div>}
-                    {done.map((t: any) => (
-                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 pl-2 border-l-2 border-green-500/30 mb-1 opacity-50 group">
-                        <span className="truncate line-through text-mutedFg">{t.title}</span>
-                        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 shrink-0">
-                           <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* BLOCKERS */}
-        <div className="space-y-6">
+          {/* BLOCKER FORM */}
           <div className="border border-border p-6 bg-bg">
             <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
               <div className="flex items-center space-x-2">
@@ -300,7 +259,77 @@ export function ManageTab() {
             </form>
           </div>
 
-          <div className="border border-border p-4 bg-bg">
+        </div>
+      </section>
+
+      {/* MANAGE EXISTING DATA SECTION */}
+      <section className="space-y-6">
+        <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2">Manage Existing Data</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* EXAMS LIST */}
+          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
+            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Exams</h3>
+            <div className="space-y-2">
+              {exams?.map(ex => (
+                <div key={ex.id} className="flex justify-between items-center text-sm p-2 hover:bg-accent/5 border-l-2" style={{ borderColor: ex.color || 'var(--color-border)' }}>
+                  <span className="font-bold truncate">{ex.name}</span>
+                  <div className="flex space-x-2 shrink-0">
+                    <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16) })}><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent" /></button>
+                    <button onClick={() => deleteItem('exams', ex.id)}><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TOPICS LIST */}
+          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
+            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Topics</h3>
+            <div className="space-y-4">
+              {exams?.map(ex => {
+                const pending = ex.topics?.filter(t => t.status !== 'COMPLETED') || [];
+                const done = ex.topics?.filter(t => t.status === 'COMPLETED') || [];
+                if (pending.length === 0 && done.length === 0) return null;
+
+                return (
+                  <div key={ex.id} className="mb-4">
+                    <div className="text-[10px] uppercase font-bold text-accent mb-2 border-b border-border pb-1" style={{ color: ex.color || 'var(--color-accent)' }}>{ex.name}</div>
+                    
+                    {pending.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mb-1">To Do</div>}
+                    {pending.map((t: any) => (
+                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 hover:bg-accent/5 pl-2 border-l-2 border-border mb-1 group transition-colors">
+                        <span className="truncate flex items-center space-x-2">
+                          {t.isPinned && <Pin className="w-3 h-3 text-accent shrink-0" />}
+                          <span className={t.isPinned ? 'text-accent font-bold' : ''}>{t.title}</span>
+                          {t.order > 0 && <span className="text-[9px] text-mutedFg border border-border px-1 ml-1 rounded-sm">Ch.{t.order}</span>}
+                        </span>
+                        <div className="flex space-x-2 opacity-50 group-hover:opacity-100 transition-opacity shrink-0 bg-bg pl-2">
+                          {!t.isPinned && <button onClick={() => pinTopic(t.id)} title="Pin to Today"><Pin className="w-3 h-3 text-mutedFg hover:text-accent" /></button>}
+                          <button onClick={() => completeTopic(t.id)} title="Complete Instantly"><CheckCircle className="w-3 h-3 text-mutedFg hover:text-green-500" /></button>
+                          <button onClick={() => setTopicForm({ id: t.id, examId: t.examId, title: t.title, size: t.size, order: t.order || '', notBefore: t.notBefore ? t.notBefore.slice(0,10) : '', isSichtung: t.isSichtung })}><Edit2 className="w-3 h-3 text-mutedFg hover:text-accent" /></button>
+                          <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {done.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mt-3 mb-1">Completed</div>}
+                    {done.map((t: any) => (
+                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 pl-2 border-l-2 border-green-500/30 mb-1 opacity-50 group">
+                        <span className="truncate line-through text-mutedFg">{t.title}</span>
+                        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 shrink-0">
+                           <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* BLOCKERS LIST */}
+          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
             <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Blockers</h3>
             <div className="space-y-2">
               {blockers?.map(b => (
@@ -317,9 +346,10 @@ export function ManageTab() {
               ))}
             </div>
           </div>
-        </div>
 
-      </div>
+        </div>
+      </section>
+
     </motion.div>
   );
 }

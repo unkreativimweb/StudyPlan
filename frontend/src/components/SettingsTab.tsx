@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Type, Sparkles } from 'lucide-react';
+import { Type, Sparkles, MonitorUp } from 'lucide-react';
+import { useStore } from '../lib/store';
 
 export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { theme: string, setTheme: (t: string) => void, layoutMode: string, setLayoutMode: (l: string) => void }) {
+  const { fontSizeMultiplier, setFontSizeMultiplier } = useStore();
   const themes = [
     { id: 'theme-brutalist', label: 'BRUTALIST', desc: 'Syne / Dark / High Contrast', className: 'font-sans' },
     { id: 'theme-editorial', label: 'EDITORIAL', desc: 'Fraunces / Light / Journal', className: 'font-serif' },
@@ -101,6 +103,33 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
               </button>
             )
           })}
+        </div>
+      </section>
+
+      <section className="space-y-8 mt-16">
+        <div className="flex items-center space-x-3 mb-6">
+          <MonitorUp className="w-5 h-5 text-accent" />
+          <h2 className="text-xl font-bold uppercase tracking-widest">Global Font Scale</h2>
+        </div>
+        <div className="border border-border bg-bg p-6 max-w-md">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs uppercase tracking-widest text-mutedFg">Scale Multiplier</span>
+            <span className="font-mono text-accent font-bold">{fontSizeMultiplier.toFixed(2)}x</span>
+          </div>
+          <input 
+            type="range" 
+            min="0.8" 
+            max="1.5" 
+            step="0.05" 
+            value={fontSizeMultiplier} 
+            onChange={(e) => setFontSizeMultiplier(parseFloat(e.target.value))}
+            className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-accent"
+          />
+          <div className="flex justify-between text-[10px] text-mutedFg mt-2 font-mono">
+            <span>0.8x</span>
+            <span>1.0x</span>
+            <span>1.5x</span>
+          </div>
         </div>
       </section>
     </motion.div>

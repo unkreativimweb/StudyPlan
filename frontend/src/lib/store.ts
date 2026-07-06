@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface Exam {
   id: string;
@@ -18,6 +19,7 @@ interface Topic {
   status: string;
   order: number;
   isSichtung: boolean;
+  notBefore?: string;
   isPinned?: boolean;
   expectedDurationMinutes: number;
   examName?: string;
@@ -36,7 +38,9 @@ interface AppState {
   weeklyPlan: any[];
   activeSessionId: string | null;
   activeTopicId: string | null;
+  fontSizeMultiplier: number;
 
+  setFontSizeMultiplier: (val: number) => void;
   fetchExams: () => Promise<void>;
   fetchBlockers: () => Promise<void>;
   fetchSchedulerData: () => Promise<void>;
@@ -50,13 +54,18 @@ interface AppState {
 
 export const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
-export const useStore = create<AppState>((set, get) => ({
-  exams: [],
+export const useStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      exams: [],
   blockers: [],
   schedulerData: null,
   weeklyPlan: [],
   activeSessionId: null,
   activeTopicId: null,
+  fontSizeMultiplier: 1.0,
+
+  setFontSizeMultiplier: (val: number) => set({ fontSizeMultiplier: val }),
 
   fetchExams: async () => {
     try {
@@ -171,4 +180,10 @@ export const useStore = create<AppState>((set, get) => ({
       console.error(e);
     }
   }
-}));
+    }),
+    {
+      name: 'studyplan-storage',
+      partialize: (state) => ({ fontSizeMultiplier: state.fontSizeMultiplier }),
+    }
+  )
+);

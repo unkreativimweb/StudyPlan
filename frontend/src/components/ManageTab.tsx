@@ -263,90 +263,132 @@ export function ManageTab() {
       </section>
 
       {/* MANAGE EXISTING DATA SECTION */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2">Manage Existing Data</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* EXAMS LIST */}
-          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
-            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Exams</h3>
-            <div className="space-y-2">
-              {exams?.map(ex => (
-                <div key={ex.id} className="flex justify-between items-center text-sm p-2 hover:bg-accent/5 border-l-2" style={{ borderColor: ex.color || 'var(--color-border)' }}>
-                  <span className="font-bold truncate">{ex.name}</span>
-                  <div className="flex space-x-2 shrink-0">
-                    <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16) })}><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent" /></button>
-                    <button onClick={() => deleteItem('exams', ex.id)}><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500" /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* TOPICS LIST */}
-          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
-            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Topics</h3>
-            <div className="space-y-4">
-              {exams?.map(ex => {
-                const pending = ex.topics?.filter(t => t.status !== 'COMPLETED') || [];
-                const done = ex.topics?.filter(t => t.status === 'COMPLETED') || [];
-                if (pending.length === 0 && done.length === 0) return null;
-
-                return (
-                  <div key={ex.id} className="mb-4">
-                    <div className="text-[10px] uppercase font-bold text-accent mb-2 border-b border-border pb-1" style={{ color: ex.color || 'var(--color-accent)' }}>{ex.name}</div>
-                    
-                    {pending.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mb-1">To Do</div>}
-                    {pending.map((t: any) => (
-                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 hover:bg-accent/5 pl-2 border-l-2 border-border mb-1 group transition-colors">
-                        <span className="truncate flex items-center space-x-2">
-                          {t.isPinned && <Pin className="w-3 h-3 text-accent shrink-0" />}
-                          <span className={t.isPinned ? 'text-accent font-bold' : ''}>{t.title}</span>
-                          {t.order > 0 && <span className="text-[9px] text-mutedFg border border-border px-1 ml-1 rounded-sm">Ch.{t.order}</span>}
-                        </span>
-                        <div className="flex space-x-2 opacity-50 group-hover:opacity-100 transition-opacity shrink-0 bg-bg pl-2">
-                          {!t.isPinned && <button onClick={() => pinTopic(t.id)} title="Pin to Today"><Pin className="w-3 h-3 text-mutedFg hover:text-accent" /></button>}
-                          <button onClick={() => completeTopic(t.id)} title="Complete Instantly"><CheckCircle className="w-3 h-3 text-mutedFg hover:text-green-500" /></button>
-                          <button onClick={() => setTopicForm({ id: t.id, examId: t.examId, title: t.title, size: t.size, order: t.order || '', notBefore: t.notBefore ? t.notBefore.slice(0,10) : '', isSichtung: t.isSichtung })}><Edit2 className="w-3 h-3 text-mutedFg hover:text-accent" /></button>
-                          <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
-                        </div>
+      <section className="space-y-12">
+        <div>
+          <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Topics</h2>
+          <div className="border border-border bg-bg overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">
+                  <th className="p-3 font-medium">Exam</th>
+                  <th className="p-3 font-medium">Title</th>
+                  <th className="p-3 font-medium">Stat</th>
+                  <th className="p-3 font-medium text-center">Ch.</th>
+                  <th className="p-3 font-medium text-center">Size</th>
+                  <th className="p-3 font-medium">Not Before</th>
+                  <th className="p-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {exams?.flatMap(ex => (ex.topics || []).map(t => (
+                  <tr key={t.id} className="hover:bg-accent/5 group">
+                    <td className="p-3 font-bold" style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</td>
+                    <td className="p-3">
+                      <div className="flex items-center space-x-2">
+                        {t.isPinned && <Pin className="w-3 h-3 text-accent" />}
+                        <span className={t.status === 'COMPLETED' ? 'line-through text-mutedFg' : ''}>{t.title}</span>
                       </div>
-                    ))}
-
-                    {done.length > 0 && <div className="text-[9px] uppercase tracking-widest text-mutedFg mt-3 mb-1">Completed</div>}
-                    {done.map((t: any) => (
-                      <div key={t.id} className="flex justify-between items-center text-sm p-1.5 pl-2 border-l-2 border-green-500/30 mb-1 opacity-50 group">
-                        <span className="truncate line-through text-mutedFg">{t.title}</span>
-                        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 shrink-0">
-                           <button onClick={() => deleteItem('topics', t.id)}><Trash2 className="w-3 h-3 text-mutedFg hover:text-red-500" /></button>
-                        </div>
+                    </td>
+                    <td className="p-3">
+                      {t.status === 'COMPLETED' ? <span className="text-green-500 text-[10px] uppercase font-bold">Done</span> : 
+                       t.isSichtung ? <span className="text-accent text-[10px] uppercase font-bold">Sichtung</span> : 
+                       <span className="text-mutedFg text-[10px] uppercase font-bold">Pending</span>}
+                    </td>
+                    <td className="p-3 text-center text-mutedFg font-mono">{t.order > 0 ? t.order : '-'}</td>
+                    <td className="p-3 text-center text-accent font-bold font-mono">{t.size}</td>
+                    <td className="p-3 text-mutedFg font-mono">{(t as any).notBefore ? new Date((t as any).notBefore).toLocaleDateString() : '-'}</td>
+                    <td className="p-3">
+                      <div className="flex justify-end space-x-3 opacity-50 group-hover:opacity-100 transition-opacity">
+                        {t.status !== 'COMPLETED' && !t.isPinned && <button onClick={() => pinTopic(t.id)} title="Pin to Today"><Pin className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>}
+                        {t.status !== 'COMPLETED' && <button onClick={() => completeTopic(t.id)} title="Complete Instantly"><CheckCircle className="w-4 h-4 text-mutedFg hover:text-green-500 transition-colors" /></button>}
+                        <button onClick={() => setTopicForm({ id: t.id, examId: t.examId, title: t.title, size: t.size, order: t.order ? t.order.toString() : '', notBefore: t.notBefore ? (t as any).notBefore.slice(0,10) : '', isSichtung: t.isSichtung })} title="Edit"><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>
+                        <button onClick={() => deleteItem('topics', t.id)} title="Delete"><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500 transition-colors" /></button>
                       </div>
-                    ))}
-                  </div>
-                )
-              })}
+                    </td>
+                  </tr>
+                )))}
+                {(!exams || exams.flatMap(ex => ex.topics || []).length === 0) && (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Topics Found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* EXAMS LIST / TABLE */}
+          <div>
+            <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Exams</h2>
+            <div className="border border-border bg-bg overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">
+                    <th className="p-3 font-medium">Name</th>
+                    <th className="p-3 font-medium">Deadline</th>
+                    <th className="p-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {exams?.map(ex => (
+                    <tr key={ex.id} className="hover:bg-accent/5 group">
+                      <td className="p-3 font-bold" style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</td>
+                      <td className="p-3 text-mutedFg font-mono">{new Date(ex.deadline).toLocaleDateString()}</td>
+                      <td className="p-3">
+                        <div className="flex justify-end space-x-3 opacity-50 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16) })} title="Edit"><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>
+                          <button onClick={() => deleteItem('exams', ex.id)} title="Delete"><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500 transition-colors" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!exams || exams.length === 0) && (
+                    <tr>
+                      <td colSpan={3} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Exams Found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* BLOCKERS LIST */}
-          <div className="border border-border p-4 bg-bg h-96 overflow-y-auto">
-            <h3 className="text-xs uppercase tracking-widest text-mutedFg mb-4">Existing Blockers</h3>
-            <div className="space-y-2">
-              {blockers?.map(b => (
-                <div key={b.id} className="flex justify-between items-center text-sm p-2 hover:bg-accent/5 border-l-2 border-accent mb-1">
-                  <div>
-                    <div className="font-bold">{b.title}</div>
-                    <div className="text-[10px] font-mono text-mutedFg">{b.dayOfWeek !== null ? `Day ${b.dayOfWeek}` : 'Specific'} • {b.startTime} - {b.endTime}</div>
-                  </div>
-                  <div className="flex space-x-2 shrink-0">
-                    <button onClick={() => setBlockerForm({ id: b.id, title: b.title, dayOfWeek: b.dayOfWeek !== null ? b.dayOfWeek.toString() : '', startTime: b.startTime, endTime: b.endTime })}><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent" /></button>
-                    <button onClick={() => deleteItem('blockers', b.id)}><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500" /></button>
-                  </div>
-                </div>
-              ))}
+          {/* BLOCKERS LIST / TABLE */}
+          <div>
+            <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Blockers</h2>
+            <div className="border border-border bg-bg overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">
+                    <th className="p-3 font-medium">Title</th>
+                    <th className="p-3 font-medium">Schedule</th>
+                    <th className="p-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {blockers?.map(b => (
+                    <tr key={b.id} className="hover:bg-accent/5 group">
+                      <td className="p-3 font-bold">{b.title}</td>
+                      <td className="p-3 text-mutedFg font-mono text-xs">
+                        {b.dayOfWeek !== null ? `Day ${b.dayOfWeek}` : 'Specific'} <br/> {b.startTime} - {b.endTime}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex justify-end space-x-3 opacity-50 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setBlockerForm({ id: b.id, title: b.title, dayOfWeek: b.dayOfWeek !== null ? b.dayOfWeek.toString() : '', startTime: b.startTime, endTime: b.endTime })} title="Edit"><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>
+                          <button onClick={() => deleteItem('blockers', b.id)} title="Delete"><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500 transition-colors" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!blockers || blockers.length === 0) && (
+                    <tr>
+                      <td colSpan={3} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Blockers Found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-
         </div>
       </section>
 

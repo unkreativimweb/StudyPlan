@@ -7,11 +7,13 @@ import { Calendar as CalendarIcon, LayoutDashboard, Database, Settings2, PlusSqu
 import { cn } from './lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarTab } from './components/CalendarTab';
+import { useStore } from './lib/store';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('focus');
   const [theme, setTheme] = useState('');
   const [layoutMode, setLayoutMode] = useState('');
+  const { fontSizeMultiplier } = useStore();
 
   // Hydrate theme from localStorage
   useEffect(() => {
@@ -27,6 +29,11 @@ export default function App() {
       document.body.className = `${theme} ${layoutMode}`;
     }
   }, [theme, layoutMode]);
+
+  // Sync font size
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${16 * (fontSizeMultiplier || 1.0)}px`;
+  }, [fontSizeMultiplier]);
 
   const tabs = [
     { id: 'focus', label: 'Focus Queue', icon: LayoutDashboard },

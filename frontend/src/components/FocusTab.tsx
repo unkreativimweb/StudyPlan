@@ -153,7 +153,7 @@ export function FocusTab() {
                   ) : (
                     <>
                       <Clock className="w-3 h-3 mr-2" />
-                      {Math.round(topic.expectedDurationMinutes || 60)}m
+                      {Math.round(topic.scheduledMinutes || topic.expectedDurationMinutes || 60)}m
                     </>
                   )}
                 </div>

@@ -100,11 +100,7 @@
 
 /* Base structural overrides */
 .layout-elegant .border,
-.layout-elegant .border-border,
-.layout-elegant .border-b,
-.layout-elegant .border-t,
-.layout-elegant .border-r,
-.layout-elegant .border-l {
+.layout-elegant .border-border {
   border-radius: 20px;
   border-color: rgba(150, 150, 150, 0.15) !important;
 }

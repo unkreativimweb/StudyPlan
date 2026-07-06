@@ -18,92 +18,12 @@ let SchedulerService = class SchedulerService {
         this.prisma = prisma;
     }
     async getDailyPlan() {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const startOfDay = new Date(today);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(today);
-        endOfDay.setHours(23, 59, 59, 999);
-        const blockers = await this.prisma.fixedBlocker.findMany({
-            where: {
-                OR: [
-                    { dayOfWeek },
-                    { specificDate: { gte: startOfDay, lt: endOfDay } }
-                ]
-            }
-        });
-        let blockedMinutes = 0;
-        for (const b of blockers) {
-            const [startH, startM] = b.startTime.split(':').map(Number);
-            const [endH, endM] = b.endTime.split(':').map(Number);
-            blockedMinutes += ((endH * 60) + endM) - ((startH * 60) + startM);
-        }
-        const settings = await this.prisma.appSettings.findFirst();
-        const buffer = settings?.dailyBufferMinutes || 60;
-        const netTimeAvailable = (24 * 60) - blockedMinutes - buffer;
-        const exams = await this.prisma.exam.findMany({
-            include: {
-                topics: {
-                    where: { status: { in: ['TODO', 'IN_PROGRESS'] } }
-                }
-            }
-        });
-        const plan = [];
-        let timeAllocated = 0;
-        for (const exam of exams) {
-            const pinnedTopics = exam.topics.filter(t => t.isPinned);
-            for (const topic of pinnedTopics) {
-                const dur = topic.expectedDurationMinutes || 60;
-                if (timeAllocated + dur <= netTimeAvailable) {
-                    plan.push({ ...topic, examName: exam.name, examColor: exam.color });
-                    timeAllocated += dur;
-                }
-                else if (plan.length === 0) {
-                    plan.push({ ...topic, examName: exam.name, examColor: exam.color });
-                    timeAllocated += dur;
-                }
-            }
-        }
-        exams.sort((a, b) => a.deadline.getTime() - b.deadline.getTime());
-        for (const exam of exams) {
-            if (exam.topics.length === 0)
-                continue;
-            let availableTopics = [];
-            if (!exam.sichtungsphaseCompleted) {
-                availableTopics = exam.topics.filter(t => t.isSichtung && !t.isPinned);
-            }
-            else {
-                availableTopics = exam.topics.filter(t => !t.isSichtung && !t.isPinned);
-            }
-            availableTopics = availableTopics.filter(t => !t.notBefore || t.notBefore <= endOfDay);
-            availableTopics.sort((a, b) => a.order - b.order);
-            for (const topic of availableTopics) {
-                const dur = topic.expectedDurationMinutes || 60;
-                if (timeAllocated + dur <= netTimeAvailable) {
-                    plan.push({ ...topic, examName: exam.name, examColor: exam.color });
-                    timeAllocated += dur;
-                }
-                else {
-                    if (plan.length === 0) {
-                        plan.push({ ...topic, examName: exam.name, examColor: exam.color });
-                        timeAllocated += dur;
-                    }
-                    break;
-                }
-            }
-        }
-        const isDoable = true;
-        return {
-            netTimeAvailable,
-            timeAllocated,
-            blockedMinutes,
-            isDoable,
-            plan
-        };
+        const weekly = await this.getWeeklyPlan();
+        return weekly[0];
     }
     async getWeeklyPlan() {
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const currentNowMinutes = today.getHours() * 60 + today.getMinutes();
         const settings = await this.prisma.appSettings.findFirst();
         const buffer = settings?.dailyBufferMinutes || 60;
         const allBlockers = await this.prisma.fixedBlocker.findMany();
@@ -113,8 +33,7 @@ let SchedulerService = class SchedulerService {
                     where: { status: { in: ['TODO', 'IN_PROGRESS'] } },
                     orderBy: { order: 'asc' }
                 }
-            },
-            orderBy: { deadline: 'asc' }
+            }
         });
         const weeklySchedule = [];
         const examStates = exams.map(e => ({
@@ -124,6 +43,7 @@ let SchedulerService = class SchedulerService {
         for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
             const currentDay = new Date(today);
             currentDay.setDate(today.getDate() + dayOffset);
+            currentDay.setHours(0, 0, 0, 0);
             const dayOfWeek = currentDay.getDay();
             const endOfDay = new Date(currentDay);
             endOfDay.setHours(23, 59, 59, 999);
@@ -138,28 +58,48 @@ let SchedulerService = class SchedulerService {
                 if (isBlockingToday) {
                     const [startH, startM] = b.startTime.split(':').map(Number);
                     const [endH, endM] = b.endTime.split(':').map(Number);
-                    blockedMinutes += ((endH * 60) + endM) - ((startH * 60) + startM);
+                    const bStart = (startH * 60) + startM;
+                    const bEnd = (endH * 60) + endM;
+                    if (dayOffset === 0) {
+                        if (bEnd <= currentNowMinutes)
+                            continue;
+                        const overlapStart = Math.max(currentNowMinutes, bStart);
+                        blockedMinutes += (bEnd - overlapStart);
+                    }
+                    else {
+                        blockedMinutes += (bEnd - bStart);
+                    }
                 }
             }
-            const netTimeAvailable = (24 * 60) - blockedMinutes - buffer;
+            let netTimeAvailable = 0;
+            if (dayOffset === 0) {
+                const minutesLeftToday = (24 * 60) - currentNowMinutes;
+                netTimeAvailable = Math.max(0, minutesLeftToday - blockedMinutes - buffer);
+            }
+            else {
+                netTimeAvailable = Math.max(0, (24 * 60) - blockedMinutes - buffer);
+            }
             const dailyPlan = [];
             let timeAllocated = 0;
-            for (const exam of examStates) {
-                const pinnedTopics = exam.topics.filter(t => t.isPinned && t.remainingDuration > 0);
-                for (const topic of pinnedTopics) {
-                    if (timeAllocated < netTimeAvailable) {
-                        const timeToAllocate = Math.min(topic.remainingDuration, netTimeAvailable - timeAllocated);
-                        if (timeToAllocate > 0) {
-                            dailyPlan.push({ ...topic, examName: exam.name, examColor: exam.color, scheduledMinutes: timeToAllocate });
-                            timeAllocated += timeToAllocate;
-                            topic.remainingDuration -= timeToAllocate;
-                            if (topic.isSichtung && topic.remainingDuration <= 0) {
-                                exam.sichtungsphaseCompleted = true;
+            if (dayOffset === 0) {
+                for (const exam of examStates) {
+                    const pinnedTopics = exam.topics.filter(t => t.isPinned && t.remainingDuration > 0);
+                    for (const topic of pinnedTopics) {
+                        if (timeAllocated < netTimeAvailable) {
+                            const timeToAllocate = Math.min(topic.remainingDuration, netTimeAvailable - timeAllocated);
+                            if (timeToAllocate > 0) {
+                                dailyPlan.push({ ...topic, examName: exam.name, examColor: exam.color, scheduledMinutes: timeToAllocate });
+                                timeAllocated += timeToAllocate;
+                                topic.remainingDuration -= timeToAllocate;
+                                if (topic.isSichtung && topic.remainingDuration <= 0) {
+                                    exam.sichtungsphaseCompleted = true;
+                                }
                             }
                         }
                     }
                 }
             }
+            let allEligibleTopics = [];
             for (const exam of examStates) {
                 if (exam.topics.length === 0)
                     continue;
@@ -169,15 +109,34 @@ let SchedulerService = class SchedulerService {
                     availableTopics = sichtung ? [sichtung] : [];
                 }
                 availableTopics = availableTopics.filter(t => !t.notBefore || t.notBefore <= endOfDay);
-                for (const topic of availableTopics) {
-                    if (timeAllocated < netTimeAvailable) {
-                        const timeToAllocate = Math.min(topic.remainingDuration, netTimeAvailable - timeAllocated);
-                        if (timeToAllocate > 0) {
-                            dailyPlan.push({ ...topic, examName: exam.name, examColor: exam.color, scheduledMinutes: timeToAllocate });
-                            timeAllocated += timeToAllocate;
-                            topic.remainingDuration -= timeToAllocate;
-                            if (topic.isSichtung && topic.remainingDuration <= 0) {
-                                exam.sichtungsphaseCompleted = true;
+                const internalDeadline = new Date(exam.deadline);
+                internalDeadline.setDate(internalDeadline.getDate() - 2);
+                const daysUntil = (internalDeadline.getTime() - currentDay.getTime()) / (1000 * 60 * 60 * 24);
+                availableTopics.forEach((topic) => {
+                    const topicIndex = topic.order > 0 ? topic.order : exam.topics.findIndex(t => t.id === topic.id);
+                    const score = daysUntil + (topicIndex * 2.0);
+                    allEligibleTopics.push({
+                        ...topic,
+                        examName: exam.name,
+                        examColor: exam.color,
+                        score,
+                        examRef: exam
+                    });
+                });
+            }
+            allEligibleTopics.sort((a, b) => a.score - b.score);
+            for (const topic of allEligibleTopics) {
+                if (timeAllocated < netTimeAvailable) {
+                    const timeToAllocate = Math.min(topic.remainingDuration, netTimeAvailable - timeAllocated);
+                    if (timeToAllocate > 0) {
+                        const { examRef, ...topicPayload } = topic;
+                        dailyPlan.push({ ...topicPayload, scheduledMinutes: timeToAllocate });
+                        timeAllocated += timeToAllocate;
+                        const originalTopic = topic.examRef.topics.find((t) => t.id === topic.id);
+                        if (originalTopic) {
+                            originalTopic.remainingDuration -= timeToAllocate;
+                            if (originalTopic.isSichtung && originalTopic.remainingDuration <= 0) {
+                                topic.examRef.sichtungsphaseCompleted = true;
                             }
                         }
                     }
@@ -189,7 +148,8 @@ let SchedulerService = class SchedulerService {
                 netTimeAvailable,
                 timeAllocated,
                 blockedMinutes,
-                plan: dailyPlan
+                plan: dailyPlan,
+                isDoable: true
             });
         }
         return weeklySchedule;

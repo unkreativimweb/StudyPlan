@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Exam {
+  id                      String    @id @default(uuid())
+  name                    String
+  deadline                DateTime
+  color                   String?
+  sichtungsphaseCompleted Boolean   @default(false)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Velocity Faktoren für dieses spezifische Fach (Standard 1.0)
+  velocityFactorS         Float     @default(1.0)
+  velocityFactorM         Float     @default(1.0)
+  velocityFactorL         Float     @default(1.0)
+  velocityFactorXL        Float     @default(1.0)
+
+  topics                  Topic[]
+}
+
+model Topic {
+  id                      String    @id @default(uuid())
+  examId                  String
+  exam                    Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  
+  title                   String
+  size                    String    // 'S', 'M', 'L', 'XL'
+  status                  String    // 'TODO', 'IN_PROGRESS', 'COMPLETED'
+  order                   Int       @default(0)
+  isSichtung              Boolean   @default(false)
+  
+  expectedDurationMinutes Float?
+  actualDurationMinutes   Float     @default(0)
+  
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  sessions                SessionTrack[]
+}
+
+model SessionTrack {
+  id                      String    @id @default(uuid())
+  topicId                 String
+  topic                   Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  startTime               DateTime
+  endTime                 DateTime?
+  durationMinutes         Float     @default(0)
+
+  createdAt               DateTime  @default(now())
+}
+
+model FixedBlocker {
+  id                      String    @id @default(uuid())
+  title                   String
+  
+  dayOfWeek               Int?      // 0-6
+  specificDate            DateTime? 
+  
+  startTime               String    // "08:00"
+  endTime                 String    // "12:30"
+  
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model AppSettings {
+  id                      String    @id @default(uuid())
+  defaultDurationS        Float     @default(30)
+  defaultDurationM        Float     @default(60)
+  defaultDurationL        Float     @default(120)
+  defaultDurationXL       Float     @default(240)
+  dailyBufferMinutes      Float     @default(60)
+}

@@ -13,7 +13,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('focus');
   const [theme, setTheme] = useState('');
   const [layoutMode, setLayoutMode] = useState('');
-  const { fontSizeMultiplier } = useStore();
+  const [sysTime, setSysTime] = useState(new Date());
+  const [isIdle, setIsIdle] = useState(false);
+  
+  const { fontSizeMultiplier, activeSessionId } = useStore();
 
   // Hydrate theme from localStorage
   useEffect(() => {
@@ -22,6 +25,39 @@ export default function App() {
     setTheme(savedTheme);
     setLayoutMode(savedLayout);
   }, []);
+
+  // System clock
+  useEffect(() => {
+    const timer = setInterval(() => setSysTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Idle detection for Zen Mode
+  useEffect(() => {
+    let timeout: any;
+    const handleActivity = () => {
+      setIsIdle(false);
+      clearTimeout(timeout);
+      if (activeSessionId) {
+        timeout = setTimeout(() => setIsIdle(true), 3000);
+      }
+    };
+    
+    // Initial setup if a session is already active
+    if (activeSessionId) {
+      timeout = setTimeout(() => setIsIdle(true), 3000);
+    } else {
+      setIsIdle(false);
+    }
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+    };
+  }, [activeSessionId]);
 
   // Sync theme to body class
   useEffect(() => {
@@ -51,8 +87,11 @@ export default function App() {
       <div className="bg-grain fixed inset-0 pointer-events-none z-[-1]" />
 
       {/* Sidebar Navigation */}
-      <nav className="w-16 md:w-64 border-r border-border bg-bg/95 flex flex-col justify-between py-8 z-20 transition-all duration-300">
-        <div className="px-4 md:px-8">
+      <nav className={cn(
+        "border-r border-border bg-bg/95 flex flex-col justify-between py-8 z-20 transition-all duration-700 ease-in-out shrink-0",
+        activeSessionId && isIdle ? "w-0 opacity-0 -translate-x-full overflow-hidden border-r-0" : "w-16 md:w-64 opacity-100 translate-x-0"
+      )}>
+        <div className="px-4 md:px-8 min-w-[64px] md:min-w-[256px]">
           <div className="w-8 h-8 bg-accent mb-12 hidden md:block" /> {/* Abstract Logo Block */}
           
           <ul className="space-y-4">
@@ -70,7 +109,7 @@ export default function App() {
                     )}
                   >
                     <Icon className={cn("w-5 h-5", isActive ? "text-accent" : "text-mutedFg group-hover:text-accent transition-colors")} />
-                    <span className="hidden md:inline uppercase tracking-widest text-[11px] font-bold">{t.label}</span>
+                    <span className="hidden md:inline uppercase tracking-widest text-[11px] font-bold whitespace-nowrap">{t.label}</span>
                   </button>
                   {/* Active Indicator Line */}
                   {isActive && (
@@ -87,13 +126,16 @@ export default function App() {
           </ul>
         </div>
         
-        <div className="px-4 md:px-8 text-[10px] text-mutedFg uppercase tracking-widest hidden md:block font-mono">
-          SYS_TIME: {new Date().toLocaleTimeString('en-US', { hour12: false })}
+        <div className="px-4 md:px-8 text-[10px] text-mutedFg uppercase tracking-widest hidden md:block font-mono min-w-[256px]">
+          SYS_TIME: {sysTime.toLocaleTimeString('en-US', { hour12: false })}
         </div>
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative z-10 p-6 md:p-12 lg:p-20">
+      <main className={cn(
+        "flex-1 overflow-y-auto relative z-10 transition-all duration-700 ease-in-out",
+        activeSessionId && isIdle ? "p-0 md:p-0 lg:p-0" : "p-6 md:p-12 lg:p-20"
+      )}>
         <AnimatePresence mode="wait">
           {activeTab === 'focus' && <FocusTab key="focus" />}
           {activeTab === 'calendar' && <CalendarTab key="calendar" />}

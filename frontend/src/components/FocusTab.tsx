@@ -13,7 +13,7 @@ export function FocusTab() {
   }, [fetchSchedulerData]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
     if (activeSessionId) {
       interval = setInterval(() => {
         setElapsedSeconds((s) => s + 1);

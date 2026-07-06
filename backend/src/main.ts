@@ -11,6 +11,6 @@ async function bootstrap() {
   // Enable CORS for Frontend MVP
   app.enableCors();
   
-  await app.listen(3000);
+  await app.listen(3000, '0.0.0.0');
 }
 bootstrap();

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useStore } from '../lib/store';
+import { useStore, API_URL } from '../lib/store';
 import { PlusSquare, Database, AlertTriangle, Edit2, Trash2, X, CheckCircle, Pin } from 'lucide-react';
 
 export function ManageTab() {
@@ -18,7 +18,7 @@ export function ManageTab() {
   const handleExamSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = examForm.id ? 'PATCH' : 'POST';
-    const url = examForm.id ? `http://localhost:3000/exams/${examForm.id}` : 'http://localhost:3000/exams';
+    const url = examForm.id ? `${API_URL}/exams/${examForm.id}` : `${API_URL}/exams`;
     try {
       const res = await fetch(url, {
         method,
@@ -35,7 +35,7 @@ export function ManageTab() {
   const handleTopicSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = topicForm.id ? 'PATCH' : 'POST';
-    const url = topicForm.id ? `http://localhost:3000/topics/${topicForm.id}` : 'http://localhost:3000/topics';
+    const url = topicForm.id ? `${API_URL}/topics/${topicForm.id}` : `${API_URL}/topics`;
     try {
       const res = await fetch(url, {
         method,
@@ -53,7 +53,7 @@ export function ManageTab() {
   const handleBlockerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = blockerForm.id ? 'PATCH' : 'POST';
-    const url = blockerForm.id ? `http://localhost:3000/blockers/${blockerForm.id}` : 'http://localhost:3000/blockers';
+    const url = blockerForm.id ? `${API_URL}/blockers/${blockerForm.id}` : `${API_URL}/blockers`;
     try {
       const payload: any = {
         title: blockerForm.title,
@@ -77,7 +77,7 @@ export function ManageTab() {
 
   const deleteItem = async (type: string, id: string) => {
     try {
-      const res = await fetch(`http://localhost:3000/${type}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/${type}/${id}`, { method: 'DELETE' });
       if (res.ok) {
         if (type === 'exams' || type === 'topics') { fetchExams(); fetchSchedulerData(); }
         if (type === 'blockers') { fetchBlockers(); fetchSchedulerData(); }

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateTopicDto {
   @IsString()
@@ -16,4 +16,12 @@ export class CreateTopicDto {
   @IsNumber()
   @IsOptional()
   order?: number;
+
+  @IsString()
+  @IsOptional()
+  notBefore?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isSichtung?: boolean;
 }

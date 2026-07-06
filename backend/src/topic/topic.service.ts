@@ -44,6 +44,8 @@ export class TopicService {
         status: 'TODO',
         order: createTopicDto.order || 0,
         expectedDurationMinutes: expectedDuration * factor,
+        notBefore: createTopicDto.notBefore ? new Date(createTopicDto.notBefore) : null,
+        isSichtung: createTopicDto.isSichtung || false,
       },
     });
   }
@@ -54,11 +56,14 @@ export class TopicService {
 
     const isCompleting = updateTopicDto.status === 'COMPLETED' && topic.status !== 'COMPLETED';
 
+    const dataToUpdate: any = { ...updateTopicDto };
+    if (updateTopicDto.notBefore !== undefined) {
+      dataToUpdate.notBefore = updateTopicDto.notBefore ? new Date(updateTopicDto.notBefore) : null;
+    }
+
     const updated = await this.prisma.topic.update({
       where: { id },
-      data: {
-        ...updateTopicDto,
-      },
+      data: dataToUpdate,
     });
 
     if (isCompleting && !topic.isSichtung && topic.actualDurationMinutes > 0) {

@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class UpdateTopicDto {
   @IsString()
@@ -21,4 +21,12 @@ export class UpdateTopicDto {
 
   @IsOptional()
   isPinned?: boolean;
+
+  @IsString()
+  @IsOptional()
+  notBefore?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isSichtung?: boolean;
 }

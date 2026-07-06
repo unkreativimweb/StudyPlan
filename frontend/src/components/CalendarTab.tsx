@@ -43,12 +43,24 @@ export function CalendarTab() {
       }
     });
 
-    // Today's Queue
+    // Today's and Upcoming Queue
     const today = new Date();
-    if (day === today.getDate() && currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear()) {
-      schedulerData?.plan?.forEach(t => {
-        events.push({ type: 'queue', title: `QUEUE: ${t.title}`, color: '#10b981' }); // Green color for queue tasks
+    const isToday = day === today.getDate() && currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear();
+    
+    if (isToday) {
+      schedulerData?.plan?.forEach((t: any) => {
+        events.push({ type: 'queue', title: `QUEUE: ${t.title}`, color: '#10b981' }); // Green for today's queue
       });
+    } else if (weeklyPlan) {
+      const planDay = weeklyPlan.find((wp: any) => {
+        const wpDate = new Date(wp.date);
+        return wpDate.getDate() === day && wpDate.getMonth() === currentMonth.getMonth() && wpDate.getFullYear() === currentMonth.getFullYear();
+      });
+      if (planDay && planDay.plan) {
+        planDay.plan.forEach((t: any) => {
+          events.push({ type: 'plan', title: `PLAN: ${t.title}`, color: '#3b82f6' }); // Blue for future plan
+        });
+      }
     }
 
     return events;

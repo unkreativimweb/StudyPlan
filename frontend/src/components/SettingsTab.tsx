@@ -28,13 +28,12 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
         <h1 className="text-5xl font-bold tracking-tighter uppercase">Configuration</h1>
       </header>
 
-      <section className="space-y-8">
-        <div className="flex items-center space-x-3 mb-6">
+      <section className="border border-border bg-bg overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50 flex items-center space-x-3">
           <Type className="w-5 h-5 text-accent" />
           <h2 className="text-xl font-bold uppercase tracking-widest">Interface Theme</h2>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
           {themes.map(t => {
             const isActive = theme === t.id;
             return (
@@ -42,8 +41,8 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
                 key={t.id}
                 onClick={() => setTheme(t.id)}
                 className={cn(
-                  "relative text-left p-6 border transition-all duration-300",
-                  isActive ? "border-accent bg-accent/5" : "border-border bg-bg hover:border-mutedFg",
+                  "relative text-left p-6 transition-all duration-300",
+                  isActive ? "bg-accent/5" : "bg-bg hover:bg-accent/5",
                   t.className
                 )}
               >
@@ -70,13 +69,12 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
         </div>
       </section>
 
-      <section className="space-y-8 mt-16">
-        <div className="flex items-center space-x-3 mb-6">
+      <section className="border border-border bg-bg overflow-hidden mt-12">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50 flex items-center space-x-3">
           <Sparkles className="w-5 h-5 text-accent" />
           <h2 className="text-xl font-bold uppercase tracking-widest">Interface Layout</h2>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
           {layouts.map(l => {
             const isActive = layoutMode === l.id;
             return (
@@ -84,8 +82,8 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
                 key={l.id}
                 onClick={() => setLayoutMode(l.id)}
                 className={cn(
-                  "relative text-left p-6 border transition-all duration-300",
-                  isActive ? "border-accent bg-accent/5" : "border-border bg-bg hover:border-mutedFg"
+                  "relative text-left p-6 transition-all duration-300",
+                  isActive ? "bg-accent/5" : "bg-bg hover:bg-accent/5"
                 )}
               >
                 {isActive && (
@@ -106,12 +104,12 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
         </div>
       </section>
 
-      <section className="space-y-8 mt-16">
-        <div className="flex items-center space-x-3 mb-6">
+      <section className="border border-border bg-bg overflow-hidden mt-12">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50 flex items-center space-x-3">
           <MonitorUp className="w-5 h-5 text-accent" />
           <h2 className="text-xl font-bold uppercase tracking-widest">Global Font Scale</h2>
         </div>
-        <div className="border border-border bg-bg p-6 max-w-md">
+        <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs uppercase tracking-widest text-mutedFg">Scale Multiplier</span>
             <span className="font-mono text-accent font-bold">{fontSizeMultiplier.toFixed(2)}x</span>

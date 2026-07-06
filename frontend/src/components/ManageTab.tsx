@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Reorder } from 'framer-motion';
 import { useStore, API_URL } from '../lib/store';
 import { PlusSquare, Database, AlertTriangle, Edit2, Trash2, X, CheckCircle, Pin } from 'lucide-react';
 
@@ -11,7 +11,7 @@ export function ManageTab() {
     fetchBlockers();
   }, [fetchExams, fetchBlockers]);
 
-  const [examForm, setExamForm] = useState({ id: '', name: '', deadline: '' });
+  const [examForm, setExamForm] = useState({ id: '', name: '', deadline: '', color: '#ff4400' });
   const [topicForm, setTopicForm] = useState({ id: '', examId: '', title: '', size: 'S', order: '', notBefore: '', isSichtung: false });
   const [blockerForm, setBlockerForm] = useState({ id: '', title: '', dayOfWeek: '', startTime: '', endTime: '' });
   const [successMsg, setSuccessMsg] = useState('');
@@ -29,10 +29,10 @@ export function ManageTab() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: examForm.name, deadline: examForm.deadline }),
+        body: JSON.stringify({ name: examForm.name, deadline: examForm.deadline, color: examForm.color }),
       });
       if (res.ok) {
-        setExamForm({ id: '', name: '', deadline: '' });
+        setExamForm({ id: '', name: '', deadline: '', color: '#ff4400' });
         fetchExams();
         showSuccess('Exam saved successfully!');
       }
@@ -99,6 +99,25 @@ export function ManageTab() {
     } catch (e) { console.error(e); }
   }
 
+  const onReorderTopics = async (newOrder: any[]) => {
+    // Optimistic UI state could be set here if we were using a local state, but we rely on zustand and re-fetch.
+    // Instead, we just batch update the order via API for all topics that changed index.
+    const promises = newOrder.map((t, index) => {
+      // If the order changed
+      if (t.order !== index + 1) {
+        return fetch(`${API_URL}/topics/${t.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: index + 1 }),
+        });
+      }
+      return Promise.resolve();
+    });
+    await Promise.all(promises);
+    fetchExams();
+    fetchSchedulerData();
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -123,9 +142,11 @@ export function ManageTab() {
       </header>
 
       {/* PROGRESS OVERVIEW */}
-      <section className="mb-12 border border-border p-6 bg-bg">
-        <h2 className="text-xl font-bold uppercase tracking-widest mb-6">Progress Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="mb-12 border border-border bg-bg overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50">
+          <h2 className="text-xl font-bold uppercase tracking-widest">Progress Overview</h2>
+        </div>
+        <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {exams?.map(ex => {
             const total = ex.topics?.length || 0;
             const completed = ex.topics?.filter(t => t.status === 'COMPLETED').length || 0;
@@ -133,7 +154,7 @@ export function ManageTab() {
             return (
               <div key={ex.id} className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm uppercase truncate pr-4">{ex.name}</span>
+                  <span className="font-bold text-sm uppercase truncate pr-4 text-xs" style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</span>
                   <span className="text-[10px] font-mono text-mutedFg whitespace-nowrap">{completed} / {total} ({pct}%)</span>
                 </div>
                 <div className="h-1.5 w-full bg-border overflow-hidden">
@@ -147,23 +168,29 @@ export function ManageTab() {
       </section>
 
       {/* CREATE NEW DATA SECTION */}
-      <section className="space-y-6">
+      <section className="space-y-8">
         <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2">Create New Data</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* EXAM FORM */}
-          <div className="border border-border p-6 bg-bg">
-            <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
+          <div className="border border-border bg-bg overflow-hidden">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-border bg-bg/50">
               <div className="flex items-center space-x-2">
                 <Database className="w-4 h-4 text-accent" />
                 <h2 className="text-xl font-bold uppercase tracking-widest">{examForm.id ? 'Edit' : 'New'} Exam</h2>
               </div>
-              {examForm.id && <button onClick={() => setExamForm({id:'', name:'', deadline:''})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
+              {examForm.id && <button onClick={() => setExamForm({id:'', name:'', deadline:'', color: '#ff4400'})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
             </div>
-            <form onSubmit={handleExamSubmit} className="space-y-4">
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Name</label>
-                <input required type="text" value={examForm.name} onChange={e => setExamForm({...examForm, name: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" />
+            <form onSubmit={handleExamSubmit} className="p-4 md:p-6 space-y-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-3">
+                  <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Name</label>
+                  <input required type="text" value={examForm.name} onChange={e => setExamForm({...examForm, name: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" />
+                </div>
+                <div className="col-span-1">
+                  <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Color</label>
+                  <input type="color" value={examForm.color} onChange={e => setExamForm({...examForm, color: e.target.value})} className="w-full h-[38px] border border-border bg-bg cursor-pointer p-0.5 outline-none rounded-none" />
+                </div>
               </div>
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Deadline</label>
@@ -176,15 +203,15 @@ export function ManageTab() {
           </div>
 
           {/* TOPIC FORM */}
-          <div className="border border-border p-6 bg-bg">
-            <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
+          <div className="border border-border bg-bg overflow-hidden">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-border bg-bg/50">
               <div className="flex items-center space-x-2">
                 <PlusSquare className="w-4 h-4 text-accent" />
                 <h2 className="text-xl font-bold uppercase tracking-widest">{topicForm.id ? 'Edit' : 'New'} Topic</h2>
               </div>
               {topicForm.id && <button onClick={() => setTopicForm({id:'', examId:'', title:'', size:'S', order: '', notBefore: '', isSichtung: false})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
             </div>
-            <form onSubmit={handleTopicSubmit} className="space-y-4">
+            <form onSubmit={handleTopicSubmit} className="p-4 md:p-6 space-y-4">
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Select Exam</label>
                 <select required value={topicForm.examId} onChange={e => setTopicForm({...topicForm, examId: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none">
@@ -226,15 +253,15 @@ export function ManageTab() {
           </div>
 
           {/* BLOCKER FORM */}
-          <div className="border border-border p-6 bg-bg">
-            <div className="flex items-center justify-between mb-6 border-b border-border pb-4">
+          <div className="border border-border bg-bg overflow-hidden">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-border bg-bg/50">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-4 h-4 text-accent" />
                 <h2 className="text-xl font-bold uppercase tracking-widest">{blockerForm.id ? 'Edit' : 'New'} Blocker</h2>
               </div>
               {blockerForm.id && <button onClick={() => setBlockerForm({id:'', title:'', dayOfWeek:'', startTime:'', endTime:''})}><X className="w-4 h-4 text-mutedFg hover:text-fg" /></button>}
             </div>
-            <form onSubmit={handleBlockerSubmit} className="space-y-4">
+            <form onSubmit={handleBlockerSubmit} className="p-4 md:p-6 space-y-4">
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-mutedFg block mb-1">Title</label>
                 <input required type="text" value={blockerForm.title} onChange={e => setBlockerForm({...blockerForm, title: e.target.value})} className="w-full border border-border bg-transparent text-fg px-3 py-2 font-mono text-sm focus:border-accent outline-none" />
@@ -263,13 +290,17 @@ export function ManageTab() {
       </section>
 
       {/* MANAGE EXISTING DATA SECTION */}
-      <section className="space-y-12">
-        <div>
-          <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Topics</h2>
-          <div className="border border-border bg-bg overflow-x-auto">
+      <section className="space-y-8">
+        <div className="border border-border bg-bg overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-border bg-bg/50">
+            <h2 className="text-2xl font-bold uppercase tracking-widest">Manage Topics</h2>
+            <p className="text-[10px] uppercase tracking-widest text-mutedFg mt-1">Drag and drop rows to reorder topics across all exams.</p>
+          </div>
+          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">
+                  <th className="p-3 font-medium w-8"></th>
                   <th className="p-3 font-medium">Exam</th>
                   <th className="p-3 font-medium">Title</th>
                   <th className="p-3 font-medium">Stat</th>
@@ -279,10 +310,19 @@ export function ManageTab() {
                   <th className="p-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {exams?.flatMap(ex => (ex.topics || []).map(t => (
-                  <tr key={t.id} className="hover:bg-accent/5 group">
-                    <td className="p-3 font-bold" style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</td>
+              <Reorder.Group as="tbody" values={exams?.flatMap(ex => ex.topics || []) || []} onReorder={onReorderTopics} className="divide-y divide-border">
+                {exams?.flatMap(ex => (ex.topics || [])).sort((a, b) => (a.order || 0) - (b.order || 0)).map(t => {
+                  const ex = exams.find(e => e.id === t.examId);
+                  return (
+                  <Reorder.Item as="tr" key={t.id} value={t} className="hover:bg-accent/5 group cursor-grab active:cursor-grabbing bg-bg relative">
+                    <td className="p-3 text-mutedFg cursor-grab">
+                      <div className="w-4 flex flex-col space-y-[2px] opacity-20 group-hover:opacity-100 hover:opacity-100 transition-opacity">
+                        <div className="w-3 h-[2px] bg-fg rounded-full"></div>
+                        <div className="w-3 h-[2px] bg-fg rounded-full"></div>
+                        <div className="w-3 h-[2px] bg-fg rounded-full"></div>
+                      </div>
+                    </td>
+                    <td className="p-3 font-bold text-xs uppercase" style={{ color: ex?.color || 'var(--color-fg)' }}>{ex?.name}</td>
                     <td className="p-3">
                       <div className="flex items-center space-x-2">
                         {t.isPinned && <Pin className="w-3 h-3 text-accent" />}
@@ -296,7 +336,7 @@ export function ManageTab() {
                     </td>
                     <td className="p-3 text-center text-mutedFg font-mono">{t.order > 0 ? t.order : '-'}</td>
                     <td className="p-3 text-center text-accent font-bold font-mono">{t.size}</td>
-                    <td className="p-3 text-mutedFg font-mono">{(t as any).notBefore ? new Date((t as any).notBefore).toLocaleDateString() : '-'}</td>
+                    <td className="p-3 text-mutedFg font-mono text-xs">{(t as any).notBefore ? new Date((t as any).notBefore).toLocaleDateString() : '-'}</td>
                     <td className="p-3">
                       <div className="flex justify-end space-x-3 opacity-50 group-hover:opacity-100 transition-opacity">
                         {t.status !== 'COMPLETED' && !t.isPinned && <button onClick={() => pinTopic(t.id)} title="Pin to Today"><Pin className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>}
@@ -305,23 +345,25 @@ export function ManageTab() {
                         <button onClick={() => deleteItem('topics', t.id)} title="Delete"><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500 transition-colors" /></button>
                       </div>
                     </td>
-                  </tr>
-                )))}
+                  </Reorder.Item>
+                )})}
                 {(!exams || exams.flatMap(ex => ex.topics || []).length === 0) && (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Topics Found</td>
+                    <td colSpan={8} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Topics Found</td>
                   </tr>
                 )}
-              </tbody>
+              </Reorder.Group>
             </table>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* EXAMS LIST / TABLE */}
-          <div>
-            <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Exams</h2>
-            <div className="border border-border bg-bg overflow-x-auto">
+          <div className="border border-border bg-bg overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-border bg-bg/50">
+              <h2 className="text-2xl font-bold uppercase tracking-widest">Manage Exams</h2>
+            </div>
+            <div className="overflow-x-auto h-96">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">
@@ -333,11 +375,14 @@ export function ManageTab() {
                 <tbody className="divide-y divide-border">
                   {exams?.map(ex => (
                     <tr key={ex.id} className="hover:bg-accent/5 group">
-                      <td className="p-3 font-bold" style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</td>
-                      <td className="p-3 text-mutedFg font-mono">{new Date(ex.deadline).toLocaleDateString()}</td>
+                      <td className="p-3 font-bold text-xs uppercase flex items-center space-x-2">
+                        <span className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: ex.color || 'var(--color-accent)' }}></span>
+                        <span style={{ color: ex.color || 'var(--color-fg)' }}>{ex.name}</span>
+                      </td>
+                      <td className="p-3 text-mutedFg font-mono text-xs">{new Date(ex.deadline).toLocaleDateString()}</td>
                       <td className="p-3">
                         <div className="flex justify-end space-x-3 opacity-50 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16) })} title="Edit"><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>
+                          <button onClick={() => setExamForm({ id: ex.id, name: ex.name, deadline: new Date(ex.deadline).toISOString().slice(0,16), color: ex.color || '#ff4400' })} title="Edit"><Edit2 className="w-4 h-4 text-mutedFg hover:text-accent transition-colors" /></button>
                           <button onClick={() => deleteItem('exams', ex.id)} title="Delete"><Trash2 className="w-4 h-4 text-mutedFg hover:text-red-500 transition-colors" /></button>
                         </div>
                       </td>
@@ -354,9 +399,11 @@ export function ManageTab() {
           </div>
 
           {/* BLOCKERS LIST / TABLE */}
-          <div>
-            <h2 className="text-2xl font-bold uppercase tracking-widest border-b border-border pb-2 mb-4">Manage Blockers</h2>
-            <div className="border border-border bg-bg overflow-x-auto">
+          <div className="border border-border bg-bg overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-border bg-bg/50">
+              <h2 className="text-2xl font-bold uppercase tracking-widest">Manage Blockers</h2>
+            </div>
+            <div className="overflow-x-auto h-96">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border text-[10px] uppercase tracking-widest text-mutedFg">

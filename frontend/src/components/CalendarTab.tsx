@@ -49,16 +49,18 @@ export function CalendarTab() {
     
     if (isToday) {
       schedulerData?.plan?.forEach((t: any) => {
-        events.push({ type: 'queue', title: `QUEUE: ${t.title}`, color: '#10b981' }); // Green for today's queue
+        const examColor = exams?.find(e => e.id === t.examId)?.color || '#10b981';
+        events.push({ type: 'queue', title: `QUEUE: ${t.title}`, color: examColor });
       });
-    } else if (weeklyPlan) {
+      } else if (weeklyPlan) {
       const planDay = weeklyPlan.find((wp: any) => {
         const wpDate = new Date(wp.date);
         return wpDate.getDate() === day && wpDate.getMonth() === currentMonth.getMonth() && wpDate.getFullYear() === currentMonth.getFullYear();
       });
       if (planDay && planDay.plan) {
         planDay.plan.forEach((t: any) => {
-          events.push({ type: 'plan', title: `PLAN: ${t.title}`, color: '#3b82f6' }); // Blue for future plan
+          const examColor = exams?.find(e => e.id === t.examId)?.color || '#3b82f6';
+          events.push({ type: 'plan', title: `PLAN: ${t.title}`, color: examColor });
         });
       }
     }
@@ -82,26 +84,28 @@ export function CalendarTab() {
       </header>
 
       {/* 7-Day Leisurely Suggestion */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold tracking-widest uppercase border-b border-border pb-2 inline-block">7-Day Smart Projection</h2>
-        <p className="text-mutedFg text-sm">A leisurely suggestion of what needs to be done based on your daily available time.</p>
+      <section className="border border-border bg-bg overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50">
+          <h2 className="text-2xl font-bold tracking-widest uppercase inline-block">7-Day Smart Projection</h2>
+          <p className="text-mutedFg text-[10px] uppercase tracking-widest mt-1">A leisurely suggestion of what needs to be done based on your daily available time.</p>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 divide-y md:divide-y-0 md:divide-x divide-border">
           {weeklyPlan?.map((day: any, i: number) => (
-            <div key={i} className="border border-border bg-bg p-5 relative overflow-hidden group">
+            <div key={i} className="p-5 relative overflow-hidden group hover:bg-accent/5 transition-colors">
               <div className="flex justify-between items-start mb-4">
                 <span className="font-bold text-lg">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                <span className="text-xs font-mono text-mutedFg">{day.netTimeAvailable}m net</span>
+                <span className="text-[10px] font-mono text-mutedFg uppercase tracking-widest">{day.netTimeAvailable}m net</span>
               </div>
               
               {day.plan.length === 0 ? (
-                <div className="text-mutedFg text-sm italic">Free day or no tasks scheduled.</div>
+                <div className="text-mutedFg text-xs uppercase tracking-widest mt-4">Free day or no tasks scheduled.</div>
               ) : (
                 <ul className="space-y-3">
                   {day.plan.map((t: any, j: number) => (
                     <li key={j} className="text-sm border-l-2 pl-3" style={{ borderColor: t.examColor || 'var(--color-accent)' }}>
-                      <div className="font-bold truncate">{t.title}</div>
-                      <div className="text-xs text-mutedFg uppercase">{t.examName} • {t.scheduledMinutes}m</div>
+                      <div className="font-bold truncate text-xs uppercase">{t.title}</div>
+                      <div className="text-[10px] text-mutedFg font-mono">{t.examName} • {t.scheduledMinutes}m</div>
                     </li>
                   ))}
                 </ul>
@@ -112,28 +116,28 @@ export function CalendarTab() {
       </section>
 
       {/* Monthly Grid */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
+      <section className="border border-border bg-bg overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-2xl font-bold tracking-widest uppercase">{monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}</h2>
           <div className="flex space-x-2">
             <button 
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))}
-              className="border border-border p-2 hover:bg-accent/10 transition-colors"
+              className="border border-border px-4 py-2 hover:bg-accent/10 transition-colors text-xs font-bold tracking-widest uppercase"
             >
               PREV
             </button>
             <button 
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))}
-              className="border border-border p-2 hover:bg-accent/10 transition-colors"
+              className="border border-border px-4 py-2 hover:bg-accent/10 transition-colors text-xs font-bold tracking-widest uppercase"
             >
               NEXT
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-px bg-border border border-border">
+        <div className="grid grid-cols-7 gap-px bg-border">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-            <div key={d} className="bg-bg p-3 text-center text-xs font-bold uppercase tracking-widest text-mutedFg">
+            <div key={d} className="bg-bg/80 p-3 text-center text-[10px] font-bold uppercase tracking-widest text-mutedFg border-b border-border">
               {d}
             </div>
           ))}
@@ -147,13 +151,13 @@ export function CalendarTab() {
             const isToday = new Date().getDate() === d && new Date().getMonth() === currentMonth.getMonth();
             
             return (
-              <div key={d} className={cn("bg-bg p-2 min-h-[120px] transition-colors hover:bg-accent/5", isToday && "ring-2 ring-inset ring-accent")}>
-                <div className={cn("font-bold text-sm mb-2", isToday ? "text-accent" : "text-fg")}>{d}</div>
+              <div key={d} className={cn("bg-bg p-2 min-h-[120px] transition-colors hover:bg-accent/5", isToday && "ring-2 ring-inset ring-accent z-10")}>
+                <div className={cn("font-bold text-xs mb-2", isToday ? "text-accent" : "text-fg")}>{d}</div>
                 <div className="space-y-1">
                   {events.map((ev, i) => (
                     <div 
                       key={i} 
-                      className="text-[10px] px-1.5 py-0.5 rounded-sm truncate uppercase font-bold"
+                      className="text-[9px] px-1.5 py-0.5 rounded-sm truncate uppercase font-bold tracking-wider"
                       style={{ backgroundColor: `${ev.color}20`, color: ev.color }}
                     >
                       {ev.title}

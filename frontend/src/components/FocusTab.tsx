@@ -5,7 +5,7 @@ import { Check, Clock, FastForward, Play, Square } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 export function FocusTab() {
-  const { schedulerData, fetchSchedulerData, activeSessionId, activeTopicId, startSession, stopSession, completeTopic } = useStore();
+  const { schedulerData, exams, fetchSchedulerData, activeSessionId, activeTopicId, startSession, stopSession, completeTopic } = useStore();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -108,25 +108,25 @@ export function FocusTab() {
                   </button>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-mutedFg group-hover:text-fg transition-colors">
+                  <span className="text-xs font-bold uppercase tracking-wider transition-colors" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-mutedFg)' }}>
                     {topic.examName}
                   </span>
                   {topic.isSichtung && (
-                    <span className="block text-[10px] text-accent uppercase tracking-widest mt-1">Sichtung</span>
+                    <span className="block text-[10px] uppercase tracking-widest mt-1" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }}>Sichtung</span>
                   )}
                 </div>
                 <div className="col-span-5 relative">
-                  <h3 className={cn("text-lg md:text-xl font-bold tracking-tight", isActiveSession && "text-accent")}>
+                  <h3 className={cn("text-lg md:text-xl font-bold tracking-tight", isActiveSession && "text-accent")} style={isActiveSession ? { color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' } : {}}>
                     {topic.title}
                   </h3>
                   {topic.status === 'IN_PROGRESS' && !isActiveSession && (
                     <span className="absolute -bottom-4 left-0 text-[9px] uppercase tracking-widest text-mutedFg">Paused</span>
                   )}
                   {isActiveSession && (
-                    <span className="absolute -bottom-4 left-0 text-[9px] uppercase tracking-widest text-accent animate-pulse font-bold">Running</span>
+                    <span className="absolute -bottom-4 left-0 text-[9px] uppercase tracking-widest animate-pulse font-bold" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }}>Running</span>
                   )}
                 </div>
-                <div className="col-span-1 text-center font-mono font-bold text-lg text-accent">
+                <div className="col-span-1 text-center font-mono font-bold text-lg" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }}>
                   {topic.size}
                 </div>
                 <div className="col-span-1 flex justify-center">
@@ -135,9 +135,10 @@ export function FocusTab() {
                     className={cn(
                       "w-8 h-8 flex items-center justify-center border transition-all", 
                       isActiveSession 
-                        ? "border-accent text-accent bg-accent/10" 
+                        ? "bg-accent/10" 
                         : "border-border text-mutedFg hover:text-fg hover:border-fg"
                     )}
+                    style={isActiveSession ? { borderColor: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)', color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' } : {}}
                   >
                     {isActiveSession ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                   </button>
@@ -145,8 +146,8 @@ export function FocusTab() {
                 <div className="col-span-2 text-right flex items-center justify-end font-mono text-sm text-mutedFg">
                   {isActiveSession ? (
                     <>
-                      <Clock className="w-3 h-3 mr-2 text-accent animate-pulse" />
-                      <span className="text-accent font-bold">
+                      <Clock className="w-3 h-3 mr-2 animate-pulse" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }} />
+                      <span className="font-bold" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }}>
                         {Math.floor(elapsedSeconds / 60).toString().padStart(2, '0')}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
                       </span>
                     </>

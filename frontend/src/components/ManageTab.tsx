@@ -11,6 +11,14 @@ export function ManageTab() {
     fetchBlockers();
   }, [fetchExams, fetchBlockers]);
 
+  const [localTopics, setLocalTopics] = useState<any[]>([]);
+
+  useEffect(() => {
+    const flatTopics = exams?.flatMap(ex => ex.topics || []) || [];
+    const sorted = [...flatTopics].sort((a, b) => (a.order || 0) - (b.order || 0));
+    setLocalTopics(sorted);
+  }, [exams]);
+
   const [examForm, setExamForm] = useState({ id: '', name: '', deadline: '', color: '#ff4400' });
   const [topicForm, setTopicForm] = useState({ id: '', examId: '', title: '', size: 'S', order: '', notBefore: '', isSichtung: false });
   const [blockerForm, setBlockerForm] = useState({ id: '', title: '', dayOfWeek: '', startTime: '', endTime: '' });
@@ -100,7 +108,9 @@ export function ManageTab() {
   }
 
   const onReorderTopics = async (newOrder: any[]) => {
-    // Optimistic UI state could be set here if we were using a local state, but we rely on zustand and re-fetch.
+    // Instant optimistic UI state update for framer-motion
+    setLocalTopics(newOrder);
+    
     // Instead, we just batch update the order via API for all topics that changed index.
     const promises = newOrder.map((t, index) => {
       // If the order changed
@@ -310,8 +320,8 @@ export function ManageTab() {
                   <th className="p-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <Reorder.Group as="tbody" values={exams?.flatMap(ex => ex.topics || []) || []} onReorder={onReorderTopics} className="divide-y divide-border">
-                {exams?.flatMap(ex => (ex.topics || [])).sort((a, b) => (a.order || 0) - (b.order || 0)).map(t => {
+              <Reorder.Group as="tbody" values={localTopics} onReorder={onReorderTopics} className="divide-y divide-border">
+                {localTopics.map(t => {
                   const ex = exams.find(e => e.id === t.examId);
                   return (
                   <Reorder.Item as="tr" key={t.id} value={t} className="hover:bg-accent/5 group cursor-grab active:cursor-grabbing bg-bg relative">
@@ -347,7 +357,7 @@ export function ManageTab() {
                     </td>
                   </Reorder.Item>
                 )})}
-                {(!exams || exams.flatMap(ex => ex.topics || []).length === 0) && (
+                {localTopics.length === 0 && (
                   <tr>
                     <td colSpan={8} className="p-8 text-center text-mutedFg uppercase tracking-widest text-sm font-bold">No Topics Found</td>
                   </tr>

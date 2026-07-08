@@ -41,6 +41,17 @@ export function FocusTab() {
   const todayData = weeklyPlan[0];
   const tomorrowData = weeklyPlan[1];
 
+  const [localTodayPlan, setLocalTodayPlan] = useState<any[]>([]);
+  const [localTomorrowPlan, setLocalTomorrowPlan] = useState<any[]>([]);
+
+  useEffect(() => {
+    setLocalTodayPlan(todayData?.plan || []);
+  }, [todayData]);
+
+  useEffect(() => {
+    setLocalTomorrowPlan(tomorrowData?.plan || []);
+  }, [tomorrowData]);
+
   const handleComplete = async (id: string) => {
     await completeTopic(id);
   };
@@ -53,7 +64,26 @@ export function FocusTab() {
     }
   };
 
-  const onReorderTopics = async (newOrder: any[]) => {
+  const onReorderTopicsToday = async (newOrder: any[]) => {
+    setLocalTodayPlan(newOrder); // Instant UI update
+    const promises = newOrder.map((t, index) => {
+      if (t.order !== index + 1) {
+        return fetch(`${API_URL}/topics/${t.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: index + 1 }),
+        });
+      }
+      return Promise.resolve();
+    });
+    await Promise.all(promises);
+    fetchExams();
+    fetchWeeklyPlan();
+    fetchSchedulerData();
+  };
+
+  const onReorderTopicsTomorrow = async (newOrder: any[]) => {
+    setLocalTomorrowPlan(newOrder); // Instant UI update
     const promises = newOrder.map((t, index) => {
       if (t.order !== index + 1) {
         return fetch(`${API_URL}/topics/${t.id}`, {
@@ -117,9 +147,9 @@ export function FocusTab() {
           </div>
         )}
 
-        <Reorder.Group axis="y" values={todayData?.plan || []} onReorder={onReorderTopics} className="space-y-2">
+        <Reorder.Group axis="y" values={localTodayPlan} onReorder={onReorderTopicsToday} className="space-y-2">
           <AnimatePresence>
-            {(todayData?.plan || []).map((topic: any, i: number) => {
+            {localTodayPlan.map((topic: any, i: number) => {
               const isActiveSession = activeTopicId === topic.id && activeSessionId;
               
               // In Zen mode, ONLY render the active topic
@@ -258,9 +288,9 @@ export function FocusTab() {
             <span className="text-[10px] uppercase tracking-widest text-mutedFg font-mono">{new Date(tomorrowData?.date).toLocaleDateString()}</span>
           </div>
 
-          <Reorder.Group axis="y" values={tomorrowData?.plan || []} onReorder={onReorderTopics} className="space-y-2">
+          <Reorder.Group axis="y" values={localTomorrowPlan} onReorder={onReorderTopicsTomorrow} className="space-y-2">
             <AnimatePresence>
-              {(tomorrowData?.plan || []).map((topic: any, i: number) => {
+              {localTomorrowPlan.map((topic: any, i: number) => {
                 return (
                   <Reorder.Item
                     key={topic.id}

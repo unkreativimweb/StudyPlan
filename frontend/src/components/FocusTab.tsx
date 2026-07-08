@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Check, Clock, FastForward, Play, Square } from 'lucide-react';
+import { Check, Clock, FastForward, Play, Square, ChevronUp, ChevronDown } from 'lucide-react';
 import { useStore, API_URL } from '../lib/store';
 
 export function FocusTab() {
@@ -64,35 +64,27 @@ export function FocusTab() {
     }
   };
 
-  const onReorderTopicsToday = async (newOrder: any[]) => {
-    setLocalTodayPlan(newOrder); // Instant UI update
-    const promises = newOrder.map((t, index) => {
-      if (t.order !== index + 1) {
-        return fetch(`${API_URL}/topics/${t.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order: index + 1 }),
-        });
-      }
-      return Promise.resolve();
-    });
-    await Promise.all(promises);
-    fetchExams();
-    fetchWeeklyPlan();
-    fetchSchedulerData();
-  };
+  const moveTopic = async (index: number, direction: 'up' | 'down', isToday: boolean) => {
+    const plan = isToday ? localTodayPlan : localTomorrowPlan;
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === plan.length - 1) return;
 
-  const onReorderTopicsTomorrow = async (newOrder: any[]) => {
-    setLocalTomorrowPlan(newOrder); // Instant UI update
-    const promises = newOrder.map((t, index) => {
-      if (t.order !== index + 1) {
-        return fetch(`${API_URL}/topics/${t.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order: index + 1 }),
-        });
-      }
-      return Promise.resolve();
+    const newPlan = [...plan];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    const temp = newPlan[swapIndex];
+    newPlan[swapIndex] = newPlan[index];
+    newPlan[index] = temp;
+    
+    if (isToday) setLocalTodayPlan(newPlan);
+    else setLocalTomorrowPlan(newPlan);
+
+    const promises = newPlan.map((t, i) => {
+      return fetch(`${API_URL}/topics/${t.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: i + 1 }),
+      });
     });
     await Promise.all(promises);
     fetchExams();
@@ -147,7 +139,7 @@ export function FocusTab() {
           </div>
         )}
 
-        <Reorder.Group axis="y" values={localTodayPlan} onReorder={onReorderTopicsToday} className="space-y-2">
+        <div className="space-y-2">
           <AnimatePresence>
             {localTodayPlan.map((topic: any, i: number) => {
               const isActiveSession = activeTopicId === topic.id && activeSessionId;
@@ -156,20 +148,21 @@ export function FocusTab() {
               if (activeSessionId && !isActiveSession) return null;
 
               return (
-                <Reorder.Item
+                <motion.div
+                  layout
                   key={topic.id}
-                  value={topic}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ 
                     opacity: { duration: 0.3, delay: i * 0.05 }, 
                     x: { duration: 0.3, delay: i * 0.05 },
-                    scale: { duration: 0.2 }
+                    scale: { duration: 0.2 },
+                    layout: { type: "spring", stiffness: 300, damping: 30 }
                   }}
                   className={cn(
-                    "flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-4 border transition-all",
-                    isActiveSession ? "border-accent bg-bg" : "border-border bg-bg hover:border-mutedFg group cursor-grab active:cursor-grabbing",
+                    "flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-4 border transition-colors group",
+                    isActiveSession ? "border-accent bg-bg" : "border-border bg-bg hover:border-mutedFg",
                     activeSessionId && isActiveSession && "h-[60vh] text-center flex flex-col justify-center gap-12 rounded-[20px] shadow-2xl border-2"
                   )}
                   style={isActiveSession ? { borderColor: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' } : {}}
@@ -206,10 +199,9 @@ export function FocusTab() {
                   <>
                     <div className="flex items-start md:items-center justify-between md:contents w-full">
                       <div className="flex items-center space-x-2 md:col-span-1">
-                        <div className="w-2 h-8 flex flex-col justify-center space-y-[2px] opacity-20 group-hover:opacity-100 transition-opacity mr-2 hidden md:flex">
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
+                        <div className="flex flex-col opacity-50 group-hover:opacity-100 transition-opacity mr-2 hidden md:flex">
+                          <button onClick={() => moveTopic(i, 'up', true)} disabled={i === 0} className="hover:text-accent disabled:opacity-20 transition-colors"><ChevronUp className="w-4 h-4" /></button>
+                          <button onClick={() => moveTopic(i, 'down', true)} disabled={i === localTodayPlan.length - 1} className="hover:text-accent disabled:opacity-20 transition-colors"><ChevronDown className="w-4 h-4" /></button>
                         </div>
                         <button 
                           onClick={() => handleComplete(topic.id)}
@@ -296,11 +288,11 @@ export function FocusTab() {
                     </div>
                   </>
                   )}
-                </Reorder.Item>
+                </motion.div>
               );
             })}
           </AnimatePresence>
-        </Reorder.Group>
+        </div>
         
         {(!todayData?.plan || todayData.plan.length === 0) && !activeSessionId && (
           <div className="py-12 text-center border border-dashed border-border mt-4">
@@ -318,29 +310,29 @@ export function FocusTab() {
             <span className="text-[10px] uppercase tracking-widest text-mutedFg font-mono">{new Date(tomorrowData?.date).toLocaleDateString()}</span>
           </div>
 
-          <Reorder.Group axis="y" values={localTomorrowPlan} onReorder={onReorderTopicsTomorrow} className="space-y-2">
+          <div className="space-y-2">
             <AnimatePresence>
               {localTomorrowPlan.map((topic: any, i: number) => {
                 return (
-                  <Reorder.Item
+                  <motion.div
+                    layout
                     key={topic.id}
-                    value={topic}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ 
                       opacity: { duration: 0.3, delay: i * 0.05 }, 
                       x: { duration: 0.3, delay: i * 0.05 },
-                      scale: { duration: 0.2 }
+                      scale: { duration: 0.2 },
+                      layout: { type: "spring", stiffness: 300, damping: 30 }
                     }}
-                    className="flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-3 border border-border bg-bg/50 hover:bg-bg hover:border-mutedFg group cursor-grab active:cursor-grabbing transition-all"
+                    className="flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-3 border border-border bg-bg/50 hover:bg-bg hover:border-mutedFg group transition-colors"
                   >
                     <div className="flex items-start md:items-center justify-between md:contents w-full">
                       <div className="flex items-center space-x-2 md:col-span-1">
-                        <div className="w-2 h-8 flex flex-col justify-center space-y-[2px] opacity-20 group-hover:opacity-100 transition-opacity mr-2 hidden md:flex">
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
-                          <div className="w-1 h-1 bg-fg rounded-full"></div>
+                        <div className="flex flex-col opacity-50 group-hover:opacity-100 transition-opacity mr-2 hidden md:flex">
+                          <button onClick={() => moveTopic(i, 'up', false)} disabled={i === 0} className="hover:text-accent disabled:opacity-20 transition-colors"><ChevronUp className="w-4 h-4" /></button>
+                          <button onClick={() => moveTopic(i, 'down', false)} disabled={i === localTomorrowPlan.length - 1} className="hover:text-accent disabled:opacity-20 transition-colors"><ChevronDown className="w-4 h-4" /></button>
                         </div>
                         <button 
                           onClick={() => handleComplete(topic.id)}
@@ -376,11 +368,11 @@ export function FocusTab() {
                       <Clock className="w-3 h-3 mr-2" />
                       {Math.round(topic.scheduledMinutes || topic.expectedDurationMinutes || 60)}m
                     </div>
-                  </Reorder.Item>
+                  </motion.div>
                 );
               })}
             </AnimatePresence>
-          </Reorder.Group>
+          </div>
         </div>
       )}
     </motion.div>

@@ -143,7 +143,7 @@ export function CalendarTab() {
           ))}
           
           {blanks.map(b => (
-            <div key={`blank-${b}`} className="bg-bg/50 p-2 min-h-[120px]" />
+            <div key={`blank-${b}`} className="bg-bg/50 p-1 md:p-2 min-h-[80px] md:min-h-[120px]" />
           ))}
           
           {days.map(d => {
@@ -151,8 +151,8 @@ export function CalendarTab() {
             const isToday = new Date().getDate() === d && new Date().getMonth() === currentMonth.getMonth();
             
             return (
-              <div key={d} className={cn("bg-bg p-2 min-h-[120px] transition-colors hover:bg-accent/5", isToday && "ring-2 ring-inset ring-accent z-10")}>
-                <div className={cn("font-bold text-xs mb-2", isToday ? "text-accent" : "text-fg")}>{d}</div>
+              <div key={d} className={cn("bg-bg p-1 md:p-2 min-h-[80px] md:min-h-[120px] transition-colors hover:bg-accent/5 overflow-hidden", isToday && "ring-2 ring-inset ring-accent z-10")}>
+                <div className={cn("font-bold text-xs mb-1 md:mb-2", isToday ? "text-accent" : "text-fg")}>{d}</div>
                 <div className="space-y-1">
                   {events.map((ev, i) => (
                     <div 

@@ -162,7 +162,11 @@ export function FocusTab() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  transition={{ 
+                    opacity: { duration: 0.3, delay: i * 0.05 }, 
+                    x: { duration: 0.3, delay: i * 0.05 },
+                    scale: { duration: 0.2 }
+                  }}
                   className={cn(
                     "flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-4 border transition-all",
                     isActiveSession ? "border-accent bg-bg" : "border-border bg-bg hover:border-mutedFg group cursor-grab active:cursor-grabbing",
@@ -324,7 +328,11 @@ export function FocusTab() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    transition={{ 
+                      opacity: { duration: 0.3, delay: i * 0.05 }, 
+                      x: { duration: 0.3, delay: i * 0.05 },
+                      scale: { duration: 0.2 }
+                    }}
                     className="flex flex-col md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-3 border border-border bg-bg/50 hover:bg-bg hover:border-mutedFg group cursor-grab active:cursor-grabbing transition-all"
                   >
                     <div className="flex items-start md:items-center justify-between md:contents w-full">

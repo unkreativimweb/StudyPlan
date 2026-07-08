@@ -39,8 +39,10 @@ interface AppState {
   activeSessionId: string | null;
   activeTopicId: string | null;
   fontSizeMultiplier: number;
+  focusOrderOverride: string[];
 
   setFontSizeMultiplier: (val: number) => void;
+  setFocusOrderOverride: (orderIds: string[]) => void;
   fetchExams: () => Promise<void>;
   fetchBlockers: () => Promise<void>;
   fetchSchedulerData: () => Promise<void>;
@@ -64,8 +66,10 @@ export const useStore = create<AppState>()(
   activeSessionId: null,
   activeTopicId: null,
   fontSizeMultiplier: 1.0,
+  focusOrderOverride: [],
 
   setFontSizeMultiplier: (val: number) => set({ fontSizeMultiplier: val }),
+  setFocusOrderOverride: (orderIds: string[]) => set({ focusOrderOverride: orderIds }),
 
   fetchExams: async () => {
     try {
@@ -91,6 +95,19 @@ export const useStore = create<AppState>()(
     try {
       const res = await fetch(`${API_URL}/scheduler/daily`);
       const data = await res.json();
+      
+      const { focusOrderOverride } = get();
+      if (data?.plan) {
+        data.plan.sort((a: any, b: any) => {
+          const idxA = focusOrderOverride.indexOf(a.id);
+          const idxB = focusOrderOverride.indexOf(b.id);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return 0;
+        });
+      }
+      
       set({ schedulerData: data });
     } catch (e) {
       console.error('Failed to fetch scheduler data', e);
@@ -101,6 +118,21 @@ export const useStore = create<AppState>()(
     try {
       const res = await fetch(`${API_URL}/scheduler/weekly`);
       const data = await res.json();
+      
+      const { focusOrderOverride } = get();
+      data.forEach((day: any) => {
+        if (day.plan) {
+          day.plan.sort((a: any, b: any) => {
+            const idxA = focusOrderOverride.indexOf(a.id);
+            const idxB = focusOrderOverride.indexOf(b.id);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return 0;
+          });
+        }
+      });
+      
       set({ weeklyPlan: data });
     } catch (e) {
       console.error('Failed to fetch weekly plan', e);
@@ -183,7 +215,10 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'studyplan-storage',
-      partialize: (state) => ({ fontSizeMultiplier: state.fontSizeMultiplier }),
+      partialize: (state) => ({ 
+        fontSizeMultiplier: state.fontSizeMultiplier,
+        focusOrderOverride: state.focusOrderOverride 
+      }),
     }
   )
 );

@@ -5,7 +5,7 @@ import { Check, Clock, FastForward, Play, Square, ChevronUp, ChevronDown } from 
 import { useStore, API_URL } from '../lib/store';
 
 export function FocusTab() {
-  const { weeklyPlan, exams, fetchSchedulerData, fetchWeeklyPlan, fetchExams, activeSessionId, activeTopicId, startSession, stopSession, completeTopic } = useStore();
+  const { weeklyPlan, exams, fetchSchedulerData, fetchWeeklyPlan, fetchExams, activeSessionId, activeTopicId, startSession, stopSession, completeTopic, setFocusOrderOverride } = useStore();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const todayData = weeklyPlan?.[0];
@@ -79,17 +79,8 @@ export function FocusTab() {
     if (isToday) setLocalTodayPlan(newPlan);
     else setLocalTomorrowPlan(newPlan);
 
-    const promises = newPlan.map((t, i) => {
-      return fetch(`${API_URL}/topics/${t.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: i + 1 }),
-      });
-    });
-    await Promise.all(promises);
-    fetchExams();
-    fetchWeeklyPlan();
-    fetchSchedulerData();
+    // Save the exact user-defined sorting explicitly to local storage
+    setFocusOrderOverride(newPlan.map(t => t.id));
   };
 
   return (

@@ -8,6 +8,12 @@ export function FocusTab() {
   const { weeklyPlan, exams, fetchSchedulerData, fetchWeeklyPlan, fetchExams, activeSessionId, activeTopicId, startSession, stopSession, completeTopic } = useStore();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
+  const todayData = weeklyPlan?.[0];
+  const tomorrowData = weeklyPlan?.[1];
+
+  const [localTodayPlan, setLocalTodayPlan] = useState<any[]>([]);
+  const [localTomorrowPlan, setLocalTomorrowPlan] = useState<any[]>([]);
+
   useEffect(() => {
     fetchSchedulerData();
     fetchWeeklyPlan();
@@ -26,6 +32,14 @@ export function FocusTab() {
     return () => clearInterval(interval);
   }, [activeSessionId]);
 
+  useEffect(() => {
+    setLocalTodayPlan(todayData?.plan || []);
+  }, [todayData]);
+
+  useEffect(() => {
+    setLocalTomorrowPlan(tomorrowData?.plan || []);
+  }, [tomorrowData]);
+
   if (!weeklyPlan || weeklyPlan.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -37,20 +51,6 @@ export function FocusTab() {
       </div>
     );
   }
-
-  const todayData = weeklyPlan[0];
-  const tomorrowData = weeklyPlan[1];
-
-  const [localTodayPlan, setLocalTodayPlan] = useState<any[]>([]);
-  const [localTomorrowPlan, setLocalTomorrowPlan] = useState<any[]>([]);
-
-  useEffect(() => {
-    setLocalTodayPlan(todayData?.plan || []);
-  }, [todayData]);
-
-  useEffect(() => {
-    setLocalTomorrowPlan(tomorrowData?.plan || []);
-  }, [tomorrowData]);
 
   const handleComplete = async (id: string) => {
     await completeTopic(id);

@@ -23,6 +23,7 @@ interface Topic {
   isPinned?: boolean;
   expectedDurationMinutes: number;
   examName?: string;
+  category?: string;
 }
 
 interface SchedulerData {

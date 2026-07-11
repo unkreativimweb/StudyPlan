@@ -230,6 +230,9 @@ export function FocusTab() {
                       {topic.isSichtung && (
                         <span className="inline-block md:block ml-2 md:ml-0 text-[10px] uppercase tracking-widest mt-1" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-accent)' }}>Sichtung</span>
                       )}
+                      {topic.category === 'PRACTICE' && (
+                        <span className="inline-block md:block ml-2 md:ml-0 text-[9px] uppercase tracking-widest mt-1 text-accent border border-accent/50 px-1 font-mono">Übung</span>
+                      )}
                     </div>
                     
                     <div className="md:col-span-5 relative mt-1 md:mt-0">
@@ -344,6 +347,9 @@ export function FocusTab() {
                       <span className="text-[10px] font-bold uppercase tracking-wider transition-colors" style={{ color: exams?.find(e => e.id === topic.examId)?.color || 'var(--color-mutedFg)' }}>
                         {topic.examName}
                       </span>
+                      {topic.category === 'PRACTICE' && (
+                        <span className="inline-block md:block ml-2 md:ml-0 text-[8px] uppercase tracking-widest mt-1 text-accent/70 border border-accent/30 px-1 font-mono">Übung</span>
+                      )}
                     </div>
                     <div className="md:col-span-5 relative mt-1 md:mt-0">
                       <h3 className="text-sm md:text-md font-bold tracking-tight text-mutedFg group-hover:text-fg transition-colors">

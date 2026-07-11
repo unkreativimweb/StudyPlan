@@ -46,6 +46,7 @@ export class TopicService {
         expectedDurationMinutes: expectedDuration * factor,
         notBefore: createTopicDto.notBefore ? new Date(createTopicDto.notBefore) : null,
         isSichtung: createTopicDto.isSichtung || false,
+        category: createTopicDto.category || 'NORMAL',
       },
     });
   }
@@ -66,7 +67,7 @@ export class TopicService {
       data: dataToUpdate,
     });
 
-    if (isCompleting && !topic.isSichtung && topic.actualDurationMinutes > 0) {
+    if (isCompleting && !topic.isSichtung && topic.category === 'NORMAL' && topic.actualDurationMinutes > 0) {
       // Calculate EMA (Exponential Moving Average)
       const baseDur = await this.getBaseDuration(topic.size);
       const measuredFactor = topic.actualDurationMinutes / baseDur;

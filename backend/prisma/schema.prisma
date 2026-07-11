@@ -36,6 +36,8 @@ model Topic {
   order                   Int       @default(0)
   isSichtung              Boolean   @default(false)
   isPinned                Boolean   @default(false)
+  category                String    @default("NORMAL")
+
   
   expectedDurationMinutes Float?
   actualDurationMinutes   Float     @default(0)
@@ -80,4 +82,5 @@ model AppSettings {
   defaultDurationL        Float     @default(120)
   defaultDurationXL       Float     @default(240)
   dailyBufferMinutes      Float     @default(60)
+  maxDailyStudyMinutes    Float     @default(240)
 }

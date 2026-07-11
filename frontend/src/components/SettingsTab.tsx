@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
-import { Type, Sparkles, MonitorUp } from 'lucide-react';
-import { useStore } from '../lib/store';
+import { Type, Sparkles, MonitorUp, Clock } from 'lucide-react';
+import { useStore, API_URL } from '../lib/store';
 
 export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { theme: string, setTheme: (t: string) => void, layoutMode: string, setLayoutMode: (l: string) => void }) {
   const { fontSizeMultiplier, setFontSizeMultiplier } = useStore();
@@ -10,6 +11,32 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
     { id: 'theme-editorial', label: 'EDITORIAL', desc: 'Fraunces / Light / Journal', className: 'font-serif' },
     { id: 'theme-mono', label: 'TERMINAL', desc: 'JetBrains / Black / Green', className: 'font-mono' },
   ];
+
+  const [maxDailyStudyMinutes, setMaxDailyStudyMinutes] = useState<number>(240);
+
+  useEffect(() => {
+    fetch(`${API_URL}/settings`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.maxDailyStudyMinutes) setMaxDailyStudyMinutes(data.maxDailyStudyMinutes);
+      })
+      .catch(console.error);
+  }, []);
+
+  const updateMaxDaily = async (val: number) => {
+    setMaxDailyStudyMinutes(val);
+    try {
+      await fetch(`${API_URL}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ maxDailyStudyMinutes: val }),
+      });
+      // Optionally trigger a scheduler refetch if needed
+      useStore.getState().fetchSchedulerData();
+    } catch (e) {
+      console.error('Failed to update maxDailyStudyMinutes', e);
+    }
+  };
 
   const layouts = [
     { id: 'layout-industrial', label: 'INDUSTRIAL', desc: 'Hard borders / Dense / Monospaced' },
@@ -127,6 +154,33 @@ export function SettingsTab({ theme, setTheme, layoutMode, setLayoutMode }: { th
             <span>0.8x</span>
             <span>1.0x</span>
             <span>1.5x</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="border border-border bg-bg overflow-hidden mt-12 mb-20">
+        <div className="p-4 md:p-6 border-b border-border bg-bg/50 flex items-center space-x-3">
+          <Clock className="w-5 h-5 text-accent" />
+          <h2 className="text-xl font-bold uppercase tracking-widest">Max Daily Study Minutes</h2>
+        </div>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs uppercase tracking-widest text-mutedFg">Maximum Scheduled Time Per Day</span>
+            <span className="font-mono text-accent font-bold">{maxDailyStudyMinutes} min</span>
+          </div>
+          <input 
+            type="range" 
+            min="60" 
+            max="600" 
+            step="30" 
+            value={maxDailyStudyMinutes} 
+            onChange={(e) => updateMaxDaily(parseInt(e.target.value, 10))}
+            className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-accent"
+          />
+          <div className="flex justify-between text-[10px] text-mutedFg mt-2 font-mono">
+            <span>60m (1h)</span>
+            <span>240m (4h)</span>
+            <span>600m (10h)</span>
           </div>
         </div>
       </section>

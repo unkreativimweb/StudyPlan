@@ -29,4 +29,8 @@ export class UpdateTopicDto {
   @IsBoolean()
   @IsOptional()
   isSichtung?: boolean;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
 }

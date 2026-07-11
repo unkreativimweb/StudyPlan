@@ -24,4 +24,8 @@ export class CreateTopicDto {
   @IsBoolean()
   @IsOptional()
   isSichtung?: boolean;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
 }

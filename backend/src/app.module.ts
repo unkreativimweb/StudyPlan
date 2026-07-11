@@ -7,9 +7,10 @@ import { TopicModule } from './topic/topic.module';
 import { SessionModule } from './session/session.module';
 import { BlockerModule } from './blocker/blocker.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
-  imports: [PrismaModule, ExamModule, TopicModule, SessionModule, BlockerModule, SchedulerModule],
+  imports: [PrismaModule, ExamModule, TopicModule, SessionModule, BlockerModule, SchedulerModule, SettingsModule],
   controllers: [AppController],
   providers: [AppService],
 })

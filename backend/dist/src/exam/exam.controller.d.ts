@@ -15,6 +15,7 @@ export declare class ExamController {
             order: number;
             isSichtung: boolean;
             isPinned: boolean;
+            category: string;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             notBefore: Date | null;
@@ -44,6 +45,7 @@ export declare class ExamController {
             order: number;
             isSichtung: boolean;
             isPinned: boolean;
+            category: string;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             notBefore: Date | null;
@@ -73,6 +75,7 @@ export declare class ExamController {
             order: number;
             isSichtung: boolean;
             isPinned: boolean;
+            category: string;
             expectedDurationMinutes: number | null;
             actualDurationMinutes: number;
             notBefore: Date | null;

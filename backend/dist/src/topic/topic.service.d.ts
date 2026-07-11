@@ -15,6 +15,7 @@ export declare class TopicService {
         order: number;
         isSichtung: boolean;
         isPinned: boolean;
+        category: string;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         notBefore: Date | null;
@@ -30,6 +31,7 @@ export declare class TopicService {
         order: number;
         isSichtung: boolean;
         isPinned: boolean;
+        category: string;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         notBefore: Date | null;
@@ -46,6 +48,7 @@ export declare class TopicService {
         order: number;
         isSichtung: boolean;
         isPinned: boolean;
+        category: string;
         expectedDurationMinutes: number | null;
         actualDurationMinutes: number;
         notBefore: Date | null;

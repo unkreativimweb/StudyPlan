@@ -6,4 +6,5 @@ export declare class UpdateTopicDto {
     isPinned?: boolean;
     notBefore?: string;
     isSichtung?: boolean;
+    category?: string;
 }

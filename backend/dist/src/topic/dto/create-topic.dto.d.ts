@@ -5,4 +5,5 @@ export declare class CreateTopicDto {
     order?: number;
     notBefore?: string;
     isSichtung?: boolean;
+    category?: string;
 }

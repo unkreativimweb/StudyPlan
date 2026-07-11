@@ -16,12 +16,13 @@ const topic_module_1 = require("./topic/topic.module");
 const session_module_1 = require("./session/session.module");
 const blocker_module_1 = require("./blocker/blocker.module");
 const scheduler_module_1 = require("./scheduler/scheduler.module");
+const settings_module_1 = require("./settings/settings.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, exam_module_1.ExamModule, topic_module_1.TopicModule, session_module_1.SessionModule, blocker_module_1.BlockerModule, scheduler_module_1.SchedulerModule],
+        imports: [prisma_module_1.PrismaModule, exam_module_1.ExamModule, topic_module_1.TopicModule, session_module_1.SessionModule, blocker_module_1.BlockerModule, scheduler_module_1.SchedulerModule, settings_module_1.SettingsModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

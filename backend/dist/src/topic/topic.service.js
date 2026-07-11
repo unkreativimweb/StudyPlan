@@ -61,6 +61,7 @@ let TopicService = class TopicService {
                 expectedDurationMinutes: expectedDuration * factor,
                 notBefore: createTopicDto.notBefore ? new Date(createTopicDto.notBefore) : null,
                 isSichtung: createTopicDto.isSichtung || false,
+                category: createTopicDto.category || 'NORMAL',
             },
         });
     }
@@ -77,7 +78,7 @@ let TopicService = class TopicService {
             where: { id },
             data: dataToUpdate,
         });
-        if (isCompleting && !topic.isSichtung && topic.actualDurationMinutes > 0) {
+        if (isCompleting && !topic.isSichtung && topic.category === 'NORMAL' && topic.actualDurationMinutes > 0) {
             const baseDur = await this.getBaseDuration(topic.size);
             const measuredFactor = topic.actualDurationMinutes / baseDur;
             const clampedFactor = Math.min(Math.max(measuredFactor, 0.2), 5.0);

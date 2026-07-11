@@ -26,6 +26,7 @@ let SchedulerService = class SchedulerService {
         const currentNowMinutes = today.getHours() * 60 + today.getMinutes();
         const settings = await this.prisma.appSettings.findFirst();
         const buffer = settings?.dailyBufferMinutes || 60;
+        const maxDaily = settings?.maxDailyStudyMinutes || 240;
         const allBlockers = await this.prisma.fixedBlocker.findMany();
         const exams = await this.prisma.exam.findMany({
             include: {
@@ -79,6 +80,7 @@ let SchedulerService = class SchedulerService {
             else {
                 netTimeAvailable = Math.max(0, (24 * 60) - blockedMinutes - buffer);
             }
+            netTimeAvailable = Math.min(netTimeAvailable, maxDaily);
             const dailyPlan = [];
             let timeAllocated = 0;
             if (dayOffset === 0) {
